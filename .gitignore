@@ -1,0 +1,17 @@
+server/node_modules/
+server/.certs/
+server/labpass.sqlite
+server/*.sqlite
+server/.env
+server/.env.*
+server/.DS_Store
+.DS_Store
+.vscode/
+landing/node_modules/
+landing/dist/
+landing/.env
+landing/.env.*
+pwa/node_modules/
+pwa/dist/
+pwa/.env
+pwa/.env.*

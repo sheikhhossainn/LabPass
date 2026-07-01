@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#0f172a" />
+    <title>LabPass</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <main class="shell">
+      <section class="hero">
+        <div class="badge">Local preview</div>
+        <h1>LabPass - Scan to login. Tap to logout.</h1>
+        <p>
+          LabPass replaces manual lab computer sign-ins with a secure handoff between the Chrome
+          extension on the lab PC and your phone PWA.
+        </p>
+        <div class="actions">
+          <a class="button primary" href="#how-it-works">How it works</a>
+          <a class="button secondary" id="pwa-link" href="#">Open PWA</a>
+        </div>
+        <div class="callout" id="desktop-callout">
+          <h3>For lab desktops and PCs</h3>
+          <p>
+            Install the LabPass Chrome extension, open the extension popup, and let it show the QR
+            for students to scan from the PWA.
+          </p>
+          <a class="button ghost" id="extension-link" href="#">Install Chrome extension</a>
+        </div>
+      </section>
+
+      <section class="steps" id="how-it-works">
+        <h2>How it works</h2>
+        <div class="grid">
+          <article>
+            <span>01</span>
+            <h3>Install extension on Chrome</h3>
+            <p>The lab computer must have the LabPass Chrome extension installed and pinned.</p>
+          </article>
+          <article>
+            <span>02</span>
+            <h3>Approve in the PWA</h3>
+            <p>Students open the PWA on phone, scan the extension QR, and approve login.</p>
+          </article>
+          <article>
+            <span>03</span>
+            <h3>Logout when done</h3>
+            <p>Tap logout from the PWA. Extension idle fallback clears cookies if needed.</p>
+          </article>
+        </div>
+      </section>
+
+      <footer>
+        <a href="https://github.com/" target="_blank" rel="noreferrer">GitHub</a>
+        <span>No passwords stored</span>
+      </footer>
+    </main>
+
+    <script type="module" src="./main.js"></script>
+  </body>
+</html>

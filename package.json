@@ -1,0 +1,12 @@
+{
+  "name": "labpass-monorepo",
+  "private": true,
+  "version": "1.0.0",
+  "scripts": {
+    "dev": "npm run dev:landing",
+    "dev:landing": "npm --prefix landing run dev",
+    "dev:pwa": "npm --prefix pwa run dev",
+    "dev:server": "npm --prefix server run dev",
+    "start:server": "npm --prefix server run start"
+  }
+}
