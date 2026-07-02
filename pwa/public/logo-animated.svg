@@ -1,0 +1,44 @@
+<svg width="200" height="200" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+  <style>
+    .marker { opacity: 0; animation: pop 0.5s ease-out forwards; }
+    .m1 { animation-delay: 0s; }
+    .m2 { animation-delay: 0.15s; }
+    .m3 { animation-delay: 0.3s; }
+    .dot { opacity: 0; animation: blink 1.4s ease-in-out infinite; }
+    .d1 { animation-delay: 0.6s; } .d2 { animation-delay: 0.7s; } .d3 { animation-delay: 0.8s; }
+    .d4 { animation-delay: 0.6s; } .d5 { animation-delay: 0.7s; } .d6 { animation-delay: 0.8s; }
+    .badge { opacity: 0; transform-origin: 153px 153px; animation: check 0.5s ease-out 0.9s forwards; }
+    @keyframes pop { from { opacity: 0; transform: scale(0.6); transform-origin: center; } to { opacity: 1; transform: scale(1); } }
+    @keyframes blink { 0%,100% { opacity: 0.2; } 50% { opacity: 0.8; } }
+    @keyframes check { from { opacity: 0; transform: scale(0); } to { opacity: 1; transform: scale(1); } }
+  </style>
+
+  <!-- Background removed -->
+
+  <g class="marker m1">
+    <rect x="26" y="26" width="42" height="42" rx="10" fill="none" stroke="#10b981" stroke-width="9"/>
+    <rect x="41" y="41" width="12" height="12" rx="3" fill="#10b981"/>
+  </g>
+
+  <g class="marker m2">
+    <rect x="132" y="26" width="42" height="42" rx="10" fill="none" stroke="#10b981" stroke-width="9"/>
+    <rect x="147" y="41" width="12" height="12" rx="3" fill="#10b981"/>
+  </g>
+
+  <g class="marker m3">
+    <rect x="26" y="132" width="42" height="42" rx="10" fill="none" stroke="#10b981" stroke-width="9"/>
+    <rect x="41" y="147" width="12" height="12" rx="3" fill="#10b981"/>
+  </g>
+
+  <circle class="dot d1" cx="84" cy="47" r="4" fill="#10b981"/>
+  <circle class="dot d2" cx="100" cy="47" r="4" fill="#10b981"/>
+  <circle class="dot d3" cx="116" cy="47" r="4" fill="#10b981"/>
+  <circle class="dot d4" cx="47" cy="84" r="4" fill="#10b981"/>
+  <circle class="dot d5" cx="47" cy="100" r="4" fill="#10b981"/>
+  <circle class="dot d6" cx="47" cy="116" r="4" fill="#10b981"/>
+
+  <g class="badge">
+    <circle cx="153" cy="153" r="27" fill="#10b981"/>
+    <path d="M141 153 L149 161 L166 144" fill="none" stroke="#000000" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+</svg>

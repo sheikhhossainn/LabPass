@@ -12,12 +12,32 @@
     <link rel="stylesheet" href="./styles.css" />
   </head>
   <body>
+    <!-- Splash Screen -->
+    <div id="splash-screen" style="position: fixed; inset: 0; background: #000000; z-index: 9999; display: flex; align-items: center; justify-content: center; transition: opacity 0.5s ease; opacity: 1;">
+      <img src="./logo-animated.svg" width="140" height="140" alt="Loading..." />
+    </div>
+    <script>
+      if ('scrollRestoration' in history) {
+        history.scrollRestoration = 'manual';
+      }
+      window.scrollTo(0, 0);
+
+      window.addEventListener('load', () => {
+        setTimeout(() => {
+          const splash = document.getElementById('splash-screen');
+          if (splash) {
+            splash.style.opacity = '0';
+            setTimeout(() => splash.remove(), 500);
+          }
+        }, 1200);
+      });
+    </script>
     <!-- Background Glow -->
     <div class="glow-bg"></div>
 
     <header class="navbar">
       <div class="logo">
-        <img src="./logo.png" alt="LabPass Logo" class="logo-icon" />
+        <img src="./logo.svg" alt="LabPass Logo" class="logo-icon" />
         <span class="logo-text">LabPass</span>
       </div>
       <a class="nav-button" href="https://github.com/sheikhhossainn/LabPass" target="_blank" rel="noreferrer">

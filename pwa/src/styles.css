@@ -61,13 +61,7 @@ p {
   width: 42px;
   height: 42px;
   border-radius: 12px;
-  display: grid;
-  place-items: center;
-  color: white;
-  font-weight: 800;
-  font-size: 0.9rem;
-  background: linear-gradient(135deg, var(--accent-a), var(--accent-b));
-  box-shadow: 0 8px 18px rgba(99, 102, 241, 0.3);
+  object-fit: contain;
 }
 
 .topbar h1 {

@@ -19,12 +19,19 @@ export default function App() {
   const [sessions, setSessions] = useState([]);
   const [scannedToken, setScannedToken] = useState(null);
   const [showAccountPicker, setShowAccountPicker] = useState(false);
+  const [splash, setSplash] = useState(true);
 
   const socket = useMemo(() => io(backendUrl, { transports: ['websocket'] }), []);
 
   // Load accounts on mount
   useEffect(() => {
     getAccounts().then(setAccounts).catch(console.error);
+  }, []);
+
+  // Hide splash screen after 2 seconds
+  useEffect(() => {
+    const timer = setTimeout(() => setSplash(false), 2000);
+    return () => clearTimeout(timer);
   }, []);
 
   // Fetch sessions for all accounts periodically
@@ -158,11 +165,19 @@ export default function App() {
     setSessions(sessions.filter(s => s.sessionToken !== sessionToken));
   };
 
+  if (splash) {
+    return (
+      <main className="phone-shell" style={{ justifyContent: 'center', alignItems: 'center', minHeight: '100vh', display: 'flex' }}>
+        <img src="/logo-animated.svg" alt="Loading LabPass..." width="140" height="140" />
+      </main>
+    );
+  }
+
   return (
     <GoogleOAuthProvider clientId={googleClientId}>
       <main className="phone-shell">
         <header className="topbar">
-          <div className="logo-dot">LP</div>
+          <img src="/logo.svg" alt="LabPass" className="logo-dot" />
           <div>
             <h1>LabPass</h1>
             <p>Securing shared sessions</p>
