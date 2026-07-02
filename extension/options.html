@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LabPass Settings</title>
+  <style>
+    :root {
+      --bg: #0b1120;
+      --surface: #111827;
+      --border: rgba(148, 163, 184, 0.12);
+      --text: #e2e8f0;
+      --text-muted: #8896ab;
+      --accent: #6366f1;
+      --accent-glow: rgba(99, 102, 241, 0.25);
+      --green: #34d399;
+      --radius: 12px;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      width: 360px;
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      padding: 20px;
+    }
+
+    h1 {
+      font-size: 1.15rem;
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    h1 .icon {
+      width: 30px;
+      height: 30px;
+      border-radius: 8px;
+      background: linear-gradient(135deg, var(--accent), #8b5cf6);
+      display: grid;
+      place-items: center;
+      color: white;
+      font-size: 0.65rem;
+      font-weight: 800;
+    }
+
+    .field {
+      margin-bottom: 16px;
+    }
+
+    label {
+      display: block;
+      font-size: 0.82rem;
+      color: var(--text-muted);
+      margin-bottom: 6px;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      font-weight: 600;
+    }
+
+    input, select {
+      width: 100%;
+      padding: 10px 12px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      color: var(--text);
+      font-size: 0.9rem;
+      font-family: inherit;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    input:focus, select:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px var(--accent-glow);
+    }
+
+    .hint {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      margin-top: 4px;
+    }
+
+    .actions {
+      display: flex;
+      gap: 10px;
+      margin-top: 24px;
+    }
+
+    button {
+      flex: 1;
+      padding: 10px;
+      border: none;
+      border-radius: var(--radius);
+      font-size: 0.88rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s;
+      font-family: inherit;
+    }
+
+    .btn-save {
+      background: linear-gradient(135deg, var(--accent), #8b5cf6);
+      color: white;
+      box-shadow: 0 4px 14px var(--accent-glow);
+    }
+
+    .btn-save:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 6px 20px var(--accent-glow);
+    }
+
+    .btn-reset {
+      background: var(--surface);
+      color: var(--text-muted);
+      border: 1px solid var(--border);
+    }
+
+    .btn-reset:hover {
+      color: var(--text);
+    }
+
+    .toast {
+      position: fixed;
+      bottom: 16px;
+      left: 50%;
+      transform: translateX(-50%) translateY(60px);
+      background: var(--green);
+      color: #042f2e;
+      padding: 10px 20px;
+      border-radius: 999px;
+      font-size: 0.85rem;
+      font-weight: 700;
+      opacity: 0;
+      transition: all 0.3s ease;
+      pointer-events: none;
+    }
+
+    .toast.show {
+      transform: translateX(-50%) translateY(0);
+      opacity: 1;
+    }
+  </style>
+</head>
+<body>
+  <h1><span class="icon">LP</span> LabPass Settings</h1>
+
+  <div class="field">
+    <label for="pc-id">PC Name / Lab Identifier</label>
+    <input type="text" id="pc-id" placeholder="e.g. CSE-Lab-PC-05" maxlength="64" />
+    <p class="hint">Shown to students when they scan the QR code.</p>
+  </div>
+
+  <div class="field">
+    <label for="server-url">Server URL</label>
+    <input type="url" id="server-url" placeholder="https://localhost:3001" />
+    <p class="hint">The LabPass relay server address.</p>
+  </div>
+
+  <div class="field">
+    <label for="idle-timeout">Auto-logout after idle (minutes)</label>
+    <select id="idle-timeout">
+      <option value="5">5 minutes</option>
+      <option value="10">10 minutes</option>
+      <option value="15" selected>15 minutes</option>
+      <option value="30">30 minutes</option>
+      <option value="60">60 minutes</option>
+    </select>
+    <p class="hint">Automatically clears the session when the PC is idle.</p>
+  </div>
+
+  <div class="actions">
+    <button class="btn-reset" id="reset-btn">Reset</button>
+    <button class="btn-save" id="save-btn">Save Settings</button>
+  </div>
+
+  <div class="toast" id="toast">Settings saved ✓</div>
+
+  <script>
+    const pcIdInput = document.getElementById('pc-id');
+    const serverUrlInput = document.getElementById('server-url');
+    const idleTimeoutSelect = document.getElementById('idle-timeout');
+    const saveBtn = document.getElementById('save-btn');
+    const resetBtn = document.getElementById('reset-btn');
+    const toast = document.getElementById('toast');
+
+    const DEFAULTS = {
+      pcId: 'Lab-PC-' + Math.random().toString(36).slice(2, 6).toUpperCase(),
+      serverUrl: 'https://localhost:3001',
+      idleTimeout: 15,
+    };
+
+    // Load saved settings
+    chrome.storage.sync.get(['pcId', 'serverUrl', 'idleTimeout'], (config) => {
+      pcIdInput.value = config.pcId || DEFAULTS.pcId;
+      serverUrlInput.value = config.serverUrl || DEFAULTS.serverUrl;
+      idleTimeoutSelect.value = String(config.idleTimeout || DEFAULTS.idleTimeout);
+    });
+
+    function showToast() {
+      toast.classList.add('show');
+      setTimeout(() => toast.classList.remove('show'), 2000);
+    }
+
+    saveBtn.addEventListener('click', () => {
+      const pcId = pcIdInput.value.trim() || DEFAULTS.pcId;
+      const serverUrl = serverUrlInput.value.trim() || DEFAULTS.serverUrl;
+      const idleTimeout = parseInt(idleTimeoutSelect.value, 10) || DEFAULTS.idleTimeout;
+
+      chrome.storage.sync.set({ pcId, serverUrl, idleTimeout }, () => {
+        showToast();
+
+        // Update idle detection interval
+        chrome.idle.setDetectionInterval(idleTimeout * 60);
+      });
+    });
+
+    resetBtn.addEventListener('click', () => {
+      pcIdInput.value = DEFAULTS.pcId;
+      serverUrlInput.value = DEFAULTS.serverUrl;
+      idleTimeoutSelect.value = String(DEFAULTS.idleTimeout);
+    });
+  </script>
+</body>
+</html>

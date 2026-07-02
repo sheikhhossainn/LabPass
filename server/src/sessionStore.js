@@ -17,12 +17,25 @@ function createPendingSession({ sessionId, pcId, expiresAt }) {
     expiresAt,
     socketId: null,
     timer: null,
+    userEmail: null,
+    displayName: null,
+    pictureUrl: null,
   };
 
   sessionsByToken.set(token, record);
   tokenBySessionId.set(sessionId, token);
 
   return { token, record };
+}
+
+function getSessionsByEmail(email) {
+  const results = [];
+  for (const [token, record] of sessionsByToken.entries()) {
+    if (record.userEmail === email && record.status === 'active') {
+      results.push({ token, record });
+    }
+  }
+  return results;
 }
 
 function getSessionByToken(token) {
@@ -94,6 +107,7 @@ module.exports = {
   createPendingSession,
   getSessionById,
   getSessionByToken,
+  getSessionsByEmail,
   removeSession,
   scheduleExpiry,
   updateRecord,

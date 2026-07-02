@@ -1,17 +1,22 @@
-server/node_modules/
+# dependencies
+node_modules/
+
+# server
 server/.certs/
 server/labpass.sqlite
 server/*.sqlite
+server/*.db
 server/.env
 server/.env.*
-server/.DS_Store
-.DS_Store
-.vscode/
-landing/node_modules/
+
+# frontend (landing, pwa)
 landing/dist/
 landing/.env
 landing/.env.*
-pwa/node_modules/
 pwa/dist/
 pwa/.env
 pwa/.env.*
+
+# OS
+.DS_Store
+.vscode/

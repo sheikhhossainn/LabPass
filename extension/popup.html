@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LabPass</title>
+  <link rel="stylesheet" href="popup.css" />
+</head>
+<body>
+  <main id="app">
+    <!-- Header -->
+    <header class="header">
+      <div class="logo">
+        <div class="logo-icon">LP</div>
+        <div class="logo-text">
+          <h1>LabPass</h1>
+          <p id="pc-name-display">Lab PC</p>
+        </div>
+      </div>
+      <button id="settings-btn" class="icon-btn" title="Settings">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="3"/><path d="M12 1v2m0 18v2M4.22 4.22l1.42 1.42m12.72 12.72l1.42 1.42M1 12h2m18 0h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>
+        </svg>
+      </button>
+    </header>
+
+    <!-- State: Loading -->
+    <section id="state-loading" class="state active">
+      <div class="loader-wrap">
+        <div class="spinner"></div>
+        <p>Generating session…</p>
+      </div>
+    </section>
+
+    <!-- State: QR Ready -->
+    <section id="state-qr" class="state">
+      <div class="qr-container">
+        <div class="qr-frame">
+          <canvas id="qr-canvas"></canvas>
+          <div class="corner tl"></div>
+          <div class="corner tr"></div>
+          <div class="corner bl"></div>
+          <div class="corner br"></div>
+        </div>
+        <p class="qr-hint">Scan with LabPass on your phone</p>
+      </div>
+      <div class="timer-bar">
+        <div class="timer-fill" id="timer-fill"></div>
+      </div>
+      <p class="timer-text">Expires in <span id="timer-countdown">60</span>s</p>
+    </section>
+
+    <!-- State: Waiting for Approval -->
+    <section id="state-waiting" class="state">
+      <div class="waiting-wrap">
+        <div class="pulse-ring"></div>
+        <div class="pulse-dot"></div>
+      </div>
+      <h2>Scanned!</h2>
+      <p>Waiting for approval on your phone…</p>
+    </section>
+
+    <!-- State: Session Active -->
+    <section id="state-active" class="state">
+      <div class="active-card">
+        <div class="active-icon">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#34d399" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M20 6L9 17l-5-5"/>
+          </svg>
+        </div>
+        <h2>Session Active</h2>
+        <div class="session-info">
+          <div class="info-row">
+            <span class="label">Account</span>
+            <span class="value" id="active-email">—</span>
+          </div>
+          <div class="info-row">
+            <span class="label">Expires</span>
+            <span class="value" id="active-expires">—</span>
+          </div>
+        </div>
+        <button id="logout-btn" class="btn btn-danger">End Session</button>
+      </div>
+    </section>
+
+    <!-- State: Error -->
+    <section id="state-error" class="state">
+      <div class="error-wrap">
+        <div class="error-icon">!</div>
+        <h2>Connection Failed</h2>
+        <p id="error-message">Could not reach the LabPass server.</p>
+        <button id="retry-btn" class="btn btn-primary">Retry</button>
+      </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+      <div class="status-dot" id="status-dot"></div>
+      <span id="status-text">Connecting…</span>
+    </footer>
+  </main>
+
+  <script src="lib/qrcode.min.js"></script>
+  <script src="popup.js" type="module"></script>
+</body>
+</html>
