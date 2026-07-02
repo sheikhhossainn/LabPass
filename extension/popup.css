@@ -52,15 +52,15 @@ body {
 .logo {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 4px;
 }
 
 .logo-icon {
-  width: 36px;
-  height: 36px;
-  border-radius: 10px;
-  display: grid;
-  place-items: center;
+  width: 42px;
+  height: 42px;
+  border: none;
+  padding: 0;
+  background: transparent;
   object-fit: contain;
 }
 

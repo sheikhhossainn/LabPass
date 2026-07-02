@@ -27,7 +27,7 @@
 ```text
 LabPass/
 ├── package.json          # Workspace root — npm scripts (concurrently dev:all)
-├── server/               # HTTPS + WebSocket relay server (Node.js, Express, Socket.IO, @libsql/client)
+├── server/               # HTTPS + WebSocket relay server (Express, Socket.IO, @libsql/client)
 │   ├── index.js          # Entry: Express routes + Socket.IO event handlers
 │   └── src/
 │       ├── env.js        # dotenv loader
@@ -37,7 +37,7 @@ LabPass/
 │   ├── index.html        # SPA shell with PWA meta tags
 │   └── src/
 │       ├── App.jsx       # Multi-screen router (home, scan, sessions)
-│       ├── styles.css    # Premium dark theme + animations
+│       ├── styles.css    # Premium dark emerald theme + animations
 │       ├── components/   # HomeScreen, ScannerScreen, SessionsScreen, AccountPicker
 │       └── lib/          # db.js (IndexedDB) & crypto.js (encryption/JWT)
 ├── landing/              # Product landing page (vanilla HTML/CSS/JS, Vite)
@@ -48,6 +48,18 @@ LabPass/
     ├── options.html      # Config (PC Name, Server URL, timeout)
     └── lib/              # Bundled socket.io.min.js & qrcode.min.js
 ```
+
+---
+
+## Visual Design & Branding
+
+LabPass uses a custom-tailored **Dark Emerald / Vercel-style theme** across both PWA and Landing interfaces:
+- **Palette**: `#030504` background (pitch black with slight green tint), `#0a1410` primary panels/cards, `#0f1d17` elevated panels, `#10b981` emerald text/glow highlights.
+- **Branding**: Monogram **"P"** logo containing a negative-space checkmark (`#34d6a6`).
+- **Animations**:
+  - `logo-animated.svg`: Custom glow-filtered loading animation (growing stem, rotating bowl, drawing checkmark).
+  - Landing Hero: Interactive SVG diagram simulating live PC-to-Phone connections with pulsing spark vectors.
+  - PWA Splash: Loading splash logo auto-scales up to `220px` on phone viewports to dominate focus.
 
 ---
 
@@ -63,54 +75,26 @@ LabPass/
 
 ---
 
-## What's Built (✅) — 100% Core MVP Complete
+## Completed Implementations (✅)
 
 ### Server (`server/`)
-- Express server with Helmet security and CORS lockdown via `ALLOWED_ORIGINS`.
-- Socket.IO WebSocket relay with keepalive mechanism.
-- `POST /session/create`, `GET /sessions/active`, `GET /session/:token/status`.
-- Database rewritten from PostgreSQL to **Turso / LibSQL**.
-- Users table created automatically, upserts users on login using Google ID tokens.
-- Unit tests added (`npm test`) using Node's built-in test runner.
+- Express server with Helmet security and CORS lockdown.
+- WebSocket relay with keepalive mechanism.
+- CRUD sessions persistence via **Turso / LibSQL**.
+- Automated SQL database migrations for user logging.
 
 ### PWA (`pwa/`)
-- Multi-screen React app (Home, Scanner, Sessions, Account Picker).
-- Real **Google OAuth** flow via GSI (`@react-oauth/google`).
-- **IndexedDB** securely stores users' saved Google accounts locally.
-- QR scanner using `html5-qrcode`.
-- Emits login-approved via sockets; displays active sessions dynamically.
-- Premium dark theme (Slate & Indigo) with micro-animations.
+- IndexedDB dynamically stores Google profiles on-device.
+- Real Google OAuth authentication.
+- Customized dark Google Sign-in button with monochrome vector logo.
+- Emerald gradient action FAB ("Scan to Login") with high-contrast text.
+
+### Landing Page (`landing/`)
+- Sleek hero design featuring animated visual mockup layout.
+- Quick Actions Navbar: "Get Extension" and "Open App" smooth scroll to bottom.
+- Footer CTA Card: Unified action downloads with step-by-step Chrome installation guide.
 
 ### Chrome Extension (`extension/`)
-- MV3 popup generates and displays a QR code containing the session token.
-- Background worker maintains a Socket.IO connection (with 20s keepalive).
-- **Auto-Cleanup:** Listens for `logout` or `session-expired` and uses `chrome.browsingData.remove()` to wipe all data (cookies, localStorage, cache).
-- **Idle Detection:** Auto-logs out if the PC is left unattended.
-- Options page to configure the PC name and idle timeout.
-
----
-
-## Key Environment Variables
-
-| Package  | Variable              | Purpose                                           |
-|----------|-----------------------|---------------------------------------------------|
-| `server` | `PORT`                | HTTPS server port (default 3001)                  |
-| `server` | `TURSO_DATABASE_URL`  | URL to Turso DB (e.g. `libsql://...` or `file:...`) |
-| `server` | `TURSO_AUTH_TOKEN`    | Auth token for remote Turso DB                    |
-| `server` | `ALLOWED_ORIGINS`     | Comma-separated allowed CORS origins              |
-| `pwa`    | `VITE_BACKEND_URL`    | Server URL for API + WS                           |
-| `pwa`    | `VITE_GOOGLE_CLIENT_ID`| Google OAuth client ID                            |
-
----
-
-## Session Lifecycle
-
-1. **Extension opens popup**
-   → Creates session, generates QR, binds socket (`status: pending`, TTL: 60s).
-2. **Student scans QR via PWA**
-   → Decodes token, optionally picks Google Account.
-   → Emits `login-approved` with Google Profile payload.
-   → Server updates session to `active` (TTL: 3 hours) and broadcasts to extension.
-3. **Student taps Logout in PWA (or Idle timeout hits)**
-   → Emits `logout`. Server broadcasts to extension.
-   → Extension receives `logout` and completely wipes Chrome browsing data.
+- MV3 popup generates QR connection tokens.
+- **Auto-Cleanup**: Uses `chrome.browsingData.remove()` to wipe cookie/storage on logout.
+- **Idle Detection**: Detects user inactivity and clears active credentials automatically.

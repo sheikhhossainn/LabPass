@@ -6,6 +6,7 @@ import HomeScreen from './components/HomeScreen';
 import ScannerScreen from './components/ScannerScreen';
 import SessionsScreen from './components/SessionsScreen';
 import AccountPicker from './components/AccountPicker';
+import InstallPrompt from './components/InstallPrompt';
 
 import { getAccounts, addAccount, removeAccount } from './lib/db';
 import { encryptPayload, decodeIdToken } from './lib/crypto';
@@ -87,16 +88,38 @@ export default function App() {
   }, [socket]);
 
   const handleAddAccount = async (credentialResponse) => {
-    const { credential } = credentialResponse;
-    const decoded = decodeIdToken(credential);
-    if (!decoded) return;
+    let email, displayName, pictureUrl, idToken;
+    
+    if (credentialResponse.access_token) {
+      try {
+        const res = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
+          headers: { Authorization: `Bearer ${credentialResponse.access_token}` },
+        });
+        const userInfo = await res.json();
+        email = userInfo.email;
+        displayName = userInfo.name;
+        pictureUrl = userInfo.picture;
+        idToken = credentialResponse.access_token; // Use access token as placeholder idToken
+      } catch (err) {
+        console.error("Failed to fetch user info", err);
+        return;
+      }
+    } else {
+      const { credential } = credentialResponse;
+      const decoded = decodeIdToken(credential);
+      if (!decoded) return;
+      email = decoded.email;
+      displayName = decoded.name;
+      pictureUrl = decoded.picture;
+      idToken = credential;
+    }
 
     try {
       await addAccount({
-        email: decoded.email,
-        displayName: decoded.name,
-        pictureUrl: decoded.picture,
-        idToken: credential
+        email,
+        displayName,
+        pictureUrl,
+        idToken
       });
       const updatedAccounts = await getAccounts();
       setAccounts(updatedAccounts);
@@ -168,7 +191,7 @@ export default function App() {
   if (splash) {
     return (
       <main className="phone-shell" style={{ justifyContent: 'center', alignItems: 'center', minHeight: '100vh', display: 'flex' }}>
-        <img src="/logo-animated.svg" alt="Loading LabPass..." width="140" height="140" />
+        <img src="/logo-animated.svg" alt="Loading LabPass..." className="splash-logo" />
       </main>
     );
   }
@@ -237,6 +260,7 @@ export default function App() {
         )}
 
       </main>
+      <InstallPrompt />
     </GoogleOAuthProvider>
   );
 }

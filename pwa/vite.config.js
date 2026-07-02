@@ -14,9 +14,20 @@ export default defineConfig({
         start_url: '/',
         scope: '/',
         display: 'standalone',
-        theme_color: '#0f172a',
-        background_color: '#0b1020',
-        icons: [],
+        theme_color: '#f8fafc',
+        background_color: '#f8fafc',
+        icons: [
+          {
+            src: '/icon-192.png',
+            sizes: '192x192',
+            type: 'image/png'
+          },
+          {
+            src: '/icon-512.png',
+            sizes: '512x512',
+            type: 'image/png'
+          }
+        ],
       },
       devOptions: {
         enabled: true,

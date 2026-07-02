@@ -1,8 +1,10 @@
-const pwaUrl = import.meta.env.VITE_PWA_URL || 'http://localhost:5173';
+const pwaUrl = import.meta.env.VITE_PWA_URL || 'https://labpassmobile.vercel.app';
 const extensionUrl = 'https://github.com/sheikhhossainn/LabPass/archive/refs/heads/main.zip';
 
-const pwaLink = document.getElementById('pwa-link');
-const extensionLink = document.getElementById('extension-link');
+document.querySelectorAll('#pwa-link, #pwa-nav-link').forEach(link => {
+  link.href = pwaUrl;
+});
 
-pwaLink.href = pwaUrl;
-extensionLink.href = extensionUrl;
+document.querySelectorAll('#extension-link, #extension-nav-link').forEach(link => {
+  link.href = extensionUrl;
+});

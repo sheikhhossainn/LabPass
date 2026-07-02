@@ -1,29 +1,10 @@
-<svg width="200" height="200" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
-  <!-- Background removed -->
+<svg width="100" height="100" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+  <!-- Monogram P: stem -->
+  <rect x="30" y="26" width="14" height="48" rx="7" fill="#34d6a6"/>
 
-  <!-- Top-left QR finder marker -->
-  <rect x="26" y="26" width="42" height="42" rx="10" fill="none" stroke="#10b981" stroke-width="9"/>
-  <rect x="41" y="41" width="12" height="12" rx="3" fill="#10b981"/>
+  <!-- Monogram P: bowl -->
+  <rect x="30" y="26" width="40" height="30" rx="15" fill="#34d6a6"/>
 
-  <!-- Top-right QR finder marker -->
-  <rect x="132" y="26" width="42" height="42" rx="10" fill="none" stroke="#10b981" stroke-width="9"/>
-  <rect x="147" y="41" width="12" height="12" rx="3" fill="#10b981"/>
-
-  <!-- Bottom-left QR finder marker -->
-  <rect x="26" y="132" width="42" height="42" rx="10" fill="none" stroke="#10b981" stroke-width="9"/>
-  <rect x="41" y="147" width="12" height="12" rx="3" fill="#10b981"/>
-
-  <!-- Timing pattern: horizontal dots between TL and TR -->
-  <circle cx="84" cy="47" r="4" fill="#10b981" opacity="0.5"/>
-  <circle cx="100" cy="47" r="4" fill="#10b981" opacity="0.5"/>
-  <circle cx="116" cy="47" r="4" fill="#10b981" opacity="0.5"/>
-
-  <!-- Timing pattern: vertical dots between TL and BL -->
-  <circle cx="47" cy="84" r="4" fill="#10b981" opacity="0.5"/>
-  <circle cx="47" cy="100" r="4" fill="#10b981" opacity="0.5"/>
-  <circle cx="47" cy="116" r="4" fill="#10b981" opacity="0.5"/>
-
-  <!-- Bottom-right: checkmark badge (replaces 4th QR marker — scan succeeded / access granted) -->
-  <circle cx="153" cy="153" r="27" fill="#10b981"/>
-  <path d="M141 153 L149 161 L166 144" fill="none" stroke="#000000" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
+  <!-- Negative-space checkmark carved into the bowl -->
+  <path d="M46 42 L52 48 L64 32" fill="none" stroke="#0a1410" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
 </svg>

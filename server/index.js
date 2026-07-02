@@ -124,6 +124,19 @@ async function expireSession(io, token, reason) {
 async function main() {
   await initializeDatabase();
 
+  // Startup database cleanup of orphaned pending/active sessions
+  try {
+    const startupClean = await run(
+      "UPDATE sessions SET status = 'expired' WHERE status IN ('pending', 'active') AND expires_at < ?",
+      [new Date().toISOString()]
+    );
+    if (startupClean.rowsAffected > 0) {
+      console.log(`Database Startup: Cleaned up ${startupClean.rowsAffected} stale/expired sessions.`);
+    }
+  } catch (err) {
+    console.error('Database Startup Cleanup Error:', err);
+  }
+
   const app = express();
   app.use(helmet());
   app.disable('x-powered-by');
@@ -168,6 +181,23 @@ async function main() {
 
   app.get('/health', (req, res) => {
     res.json({ status: 'ok', timestamp: new Date().toISOString() });
+  });
+
+  app.get('/session/cleanup', async (req, res, next) => {
+    try {
+      const clean = await run(
+        "UPDATE sessions SET status = 'expired' WHERE status IN ('pending', 'active') AND expires_at < ?",
+        [new Date().toISOString()]
+      );
+      console.log(`External Cron Trigger: Cleaned up ${clean.rowsAffected} sessions.`);
+      res.json({
+        status: 'ok',
+        cleanedCount: clean.rowsAffected,
+        timestamp: new Date().toISOString(),
+      });
+    } catch (error) {
+      next(error);
+    }
   });
 
   app.post('/session/create', async (req, res, next) => {
@@ -431,6 +461,21 @@ async function main() {
       // no-op, just keeps the connection alive
     });
   });
+
+  // Periodic database cleanup for expired sessions
+  setInterval(async () => {
+    try {
+      const clean = await run(
+        "UPDATE sessions SET status = 'expired' WHERE status IN ('pending', 'active') AND expires_at < ?",
+        [new Date().toISOString()]
+      );
+      if (clean.rowsAffected > 0) {
+        console.log(`Database Cleanup: Auto-expired ${clean.rowsAffected} stale sessions.`);
+      }
+    } catch (err) {
+      console.error('Database Periodic Cleanup Error:', err);
+    }
+  }, 10 * 60 * 1000); // Run every 10 minutes
 
   httpServer.listen(PORT, () => {
     const protocol = HTTPS_KEY_PATH ? 'https' : 'http';
