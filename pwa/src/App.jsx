@@ -22,6 +22,46 @@ export default function App() {
   const [showAccountPicker, setShowAccountPicker] = useState(false);
   const [splash, setSplash] = useState(true);
 
+  // PWA installation state hooks
+  const [deferredPrompt, setDeferredPrompt] = useState(null);
+  const [isIOS, setIsIOS] = useState(false);
+  const [isStandalone, setIsStandalone] = useState(false);
+  const [showInstallModal, setShowInstallModal] = useState(false);
+
+  // Monitor PWA Installation
+  useEffect(() => {
+    const isStandaloneMode = 
+      window.matchMedia('(display-mode: standalone)').matches ||
+      window.navigator.standalone === true;
+    setIsStandalone(isStandaloneMode);
+
+    const userAgent = window.navigator.userAgent.toLowerCase();
+    const isIOSDevice = /iphone|ipad|ipod/.test(userAgent);
+    setIsIOS(isIOSDevice);
+
+    const handleBeforeInstallPrompt = (e) => {
+      e.preventDefault();
+      setDeferredPrompt(e);
+      // Auto-trigger only if not dismissed before
+      if (localStorage.getItem('installPromptDismissed') !== 'true') {
+        setShowInstallModal(true);
+      }
+    };
+
+    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+
+    // Auto-show iOS instructions on first load if not standalone and not dismissed
+    if (isStandaloneMode === false && isIOSDevice) {
+      if (localStorage.getItem('installPromptDismissed') !== 'true') {
+        setShowInstallModal(true);
+      }
+    }
+
+    return () => {
+      window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+    };
+  }, []);
+
   const socket = useMemo(() => io(backendUrl, { transports: ['websocket'] }), []);
 
   // Load accounts on mount
@@ -200,11 +240,19 @@ export default function App() {
     <GoogleOAuthProvider clientId={googleClientId}>
       <main className="phone-shell">
         <header className="topbar">
-          <img src="/logo.svg" alt="LabPass" className="logo-dot" />
-          <div>
-            <h1>LabPass</h1>
-            <p>Securing shared sessions</p>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+            <img src="/logo.svg" alt="LabPass" className="logo-dot" />
+            <div>
+              <h1>LabPass</h1>
+              <p>Securing shared sessions</p>
+            </div>
           </div>
+          {!isStandalone && (
+            <button className="install-badge-btn" onClick={() => setShowInstallModal(true)}>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ marginRight: '4px' }}><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+              Install
+            </button>
+          )}
         </header>
 
         {/* Navigation Tabs */}
@@ -260,7 +308,14 @@ export default function App() {
         )}
 
       </main>
-      <InstallPrompt />
+      {showInstallModal && (
+        <InstallPrompt 
+          deferredPrompt={deferredPrompt}
+          isIOS={isIOS}
+          isStandalone={isStandalone}
+          onClose={() => setShowInstallModal(false)}
+        />
+      )}
     </GoogleOAuthProvider>
   );
 }

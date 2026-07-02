@@ -77,15 +77,37 @@ p {
   object-fit: contain;
 }
 
+.install-badge-btn {
+  display: inline-flex;
+  align-items: center;
+  background: rgba(52, 214, 166, 0.08);
+  border: 1px solid rgba(52, 214, 166, 0.2);
+  color: #34d6a6;
+  padding: 6px 12px;
+  border-radius: 999px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+  margin-left: auto;
+}
+
+.install-badge-btn:hover {
+  background: rgba(52, 214, 166, 0.15);
+  border-color: rgba(52, 214, 166, 0.4);
+  transform: translateY(-1px);
+}
+
 .splash-logo {
   width: 140px;
   height: 140px;
+  object-fit: contain;
 }
 
 @media (max-width: 600px) {
   .splash-logo {
-    width: 220px;
-    height: 220px;
+    width: 220px !important;
+    height: 220px !important;
   }
 }
 
