@@ -5,8 +5,7 @@ import { io } from 'socket.io-client';
 import HomeScreen from './components/HomeScreen';
 import ScannerScreen from './components/ScannerScreen';
 import SessionsScreen from './components/SessionsScreen';
-import AccountPicker from './components/AccountPicker';
-import InstallPrompt from './components/InstallPrompt';
+import InstallGate from './components/InstallGate';
 
 import { getAccounts, addAccount, removeAccount } from './lib/db';
 import { encryptPayload, decodeIdToken } from './lib/crypto';
@@ -14,26 +13,67 @@ import { encryptPayload, decodeIdToken } from './lib/crypto';
 const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3001';
 const googleClientId = import.meta.env.VITE_GOOGLE_CLIENT_ID || 'missing-client-id';
 
+function getInstalledState() {
+  return window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+}
+
+function getRouteFromHash() {
+  const route = window.location.hash.replace(/^#\/?/, '').toLowerCase();
+  if (route === 'scan' || route === 'sessions' || route === 'setup') {
+    return route;
+  }
+
+  return 'setup';
+}
+
+function setRouteHash(route) {
+  window.location.hash = `#/${route}`;
+}
+
 export default function App() {
-  const [screen, setScreen] = useState('home'); // home, scan, sessions
+  const [isInstalled, setIsInstalled] = useState(() => getInstalledState());
+  const [route, setRoute] = useState(() => (getInstalledState() ? getRouteFromHash() : 'install'));
   const [accounts, setAccounts] = useState([]);
   const [sessions, setSessions] = useState([]);
   const [scannedToken, setScannedToken] = useState(null);
-  const [showAccountPicker, setShowAccountPicker] = useState(false);
+  const [selectedAccountEmail, setSelectedAccountEmail] = useState(() => {
+    try {
+      return sessionStorage.getItem('labpass.selectedAccountEmail') || '';
+    } catch {
+      return '';
+    }
+  });
   const [splash, setSplash] = useState(true);
 
-  // PWA installation state hooks
   const [deferredPrompt, setDeferredPrompt] = useState(null);
   const [isIOS, setIsIOS] = useState(false);
-  const [isStandalone, setIsStandalone] = useState(false);
-  const [showInstallModal, setShowInstallModal] = useState(false);
+  const selectedAccount = accounts.find((account) => account.email === selectedAccountEmail) || null;
 
-  // Monitor PWA Installation
+  const navigateTo = (nextRoute) => {
+    if (!isInstalled) {
+      setRoute('install');
+      setRouteHash('install');
+      return;
+    }
+
+    setRoute(nextRoute);
+    setRouteHash(nextRoute);
+  };
+
   useEffect(() => {
-    const isStandaloneMode = 
-      window.matchMedia('(display-mode: standalone)').matches ||
-      window.navigator.standalone === true;
-    setIsStandalone(isStandaloneMode);
+    const syncInstallationState = () => {
+      const installed = getInstalledState();
+      setIsInstalled(installed);
+
+      if (!installed) {
+        setRoute('install');
+        setRouteHash('install');
+        return;
+      }
+
+      const nextRoute = getRouteFromHash();
+      setRoute(nextRoute);
+    };
 
     const userAgent = window.navigator.userAgent.toLowerCase();
     const isIOSDevice = /iphone|ipad|ipod/.test(userAgent);
@@ -42,27 +82,77 @@ export default function App() {
     const handleBeforeInstallPrompt = (e) => {
       e.preventDefault();
       setDeferredPrompt(e);
-      // Auto-trigger only if not dismissed before
-      if (localStorage.getItem('installPromptDismissed') !== 'true') {
-        setShowInstallModal(true);
-      }
     };
 
-    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+    const handleAppInstalled = () => {
+      setDeferredPrompt(null);
+      setIsInstalled(true);
+      setRoute('setup');
+      setRouteHash('setup');
+    };
 
-    // Auto-show iOS instructions on first load if not standalone and not dismissed
-    if (isStandaloneMode === false && isIOSDevice) {
-      if (localStorage.getItem('installPromptDismissed') !== 'true') {
-        setShowInstallModal(true);
-      }
-    }
+    const handleHashChange = () => {
+      const installed = getInstalledState();
+      setIsInstalled(installed);
+      setRoute(installed ? getRouteFromHash() : 'install');
+    };
+
+    syncInstallationState();
+    window.addEventListener('hashchange', handleHashChange);
+    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+    window.addEventListener('appinstalled', handleAppInstalled);
 
     return () => {
+      window.removeEventListener('hashchange', handleHashChange);
       window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+      window.removeEventListener('appinstalled', handleAppInstalled);
     };
   }, []);
 
   const socket = useMemo(() => io(backendUrl, { transports: ['websocket'] }), []);
+
+  useEffect(() => {
+    if (!isInstalled) {
+      setRoute('install');
+      return;
+    }
+
+    if (route === 'install') {
+      setRoute('setup');
+      setRouteHash('setup');
+    }
+  }, [isInstalled, route]);
+
+  useEffect(() => {
+    if (!isInstalled || route !== 'scan' || accounts.length === 0) {
+      return;
+    }
+
+    if (selectedAccount) {
+      return;
+    }
+
+    if (accounts.length === 1) {
+      setSelectedAccountEmail(accounts[0].email);
+      return;
+    }
+
+    setScannedToken(null);
+    setRoute('setup');
+    setRouteHash('setup');
+  }, [accounts, isInstalled, route, selectedAccount]);
+
+  useEffect(() => {
+    try {
+      if (selectedAccountEmail) {
+        sessionStorage.setItem('labpass.selectedAccountEmail', selectedAccountEmail);
+      } else {
+        sessionStorage.removeItem('labpass.selectedAccountEmail');
+      }
+    } catch {
+      // Ignore storage failures; the flow still works without persistence.
+    }
+  }, [selectedAccountEmail]);
 
   // Load accounts on mount
   useEffect(() => {
@@ -109,7 +199,8 @@ export default function App() {
   useEffect(() => {
     socket.on('login-approved', (data) => {
       console.log('Login approved via socket', data);
-      setScreen('sessions');
+      setRoute('sessions');
+      setRouteHash('sessions');
     });
     socket.on('logout', (data) => {
       console.log('Logout via socket', data);
@@ -173,12 +264,26 @@ export default function App() {
       await removeAccount(email);
       const updatedAccounts = await getAccounts();
       setAccounts(updatedAccounts);
+      if (selectedAccountEmail === email) {
+        setSelectedAccountEmail('');
+        if (route === 'scan') {
+          navigateTo('setup');
+        }
+      }
     } catch (error) {
       console.error('Failed to remove account', error);
     }
   };
 
   const handleScanSuccess = (decodedText) => {
+    const account = selectedAccount || (accounts.length === 1 ? accounts[0] : null);
+
+    if (!account) {
+      alert('Select an account before scanning.');
+      navigateTo('setup');
+      return;
+    }
+
     let token = decodedText;
     
     // Parse QR if it's JSON (the extension sends JSON)
@@ -191,16 +296,7 @@ export default function App() {
 
     setScannedToken(token);
     
-    if (accounts.length === 1) {
-      // Auto-select if only one account
-      approveLogin(token, accounts[0]);
-    } else if (accounts.length > 1) {
-      // Show picker
-      setShowAccountPicker(true);
-    } else {
-      alert("Please add an account first.");
-      setScreen('home');
-    }
+    approveLogin(token, account);
   };
 
   const approveLogin = (token, account) => {
@@ -218,9 +314,10 @@ export default function App() {
       encryptedPayload: encryptPayload(payload),
     });
     
-    setShowAccountPicker(false);
+    setSelectedAccountEmail('');
     setScannedToken(null);
-    setScreen('sessions');
+    setRoute('sessions');
+    setRouteHash('sessions');
   };
 
   const handleLogout = (sessionToken) => {
@@ -228,11 +325,34 @@ export default function App() {
     setSessions(sessions.filter(s => s.sessionToken !== sessionToken));
   };
 
+  const handleInstallClick = async () => {
+    if (!deferredPrompt) {
+      return;
+    }
+
+    deferredPrompt.prompt();
+    try {
+      await deferredPrompt.userChoice;
+    } catch {
+      // ignore prompt failures; appinstalled handles the success path
+    }
+  };
+
   if (splash) {
     return (
-      <main className="phone-shell" style={{ justifyContent: 'center', alignItems: 'center', minHeight: '100vh', display: 'flex' }}>
+      <div style={{ position: 'fixed', inset: 0, width: '100vw', height: '100dvh', background: 'var(--bg)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999 }}>
         <img src="/logo-animated.svg" alt="Loading LabPass..." className="splash-logo" />
-      </main>
+      </div>
+    );
+  }
+
+  if (!isInstalled) {
+    return (
+      <InstallGate
+        isIOS={isIOS}
+        deferredPrompt={deferredPrompt}
+        onInstall={handleInstallClick}
+      />
     );
   }
 
@@ -247,75 +367,59 @@ export default function App() {
               <p>Securing shared sessions</p>
             </div>
           </div>
-          {!isStandalone && (
-            <button className="install-badge-btn" onClick={() => setShowInstallModal(true)}>
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ marginRight: '4px' }}><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-              Install
-            </button>
-          )}
         </header>
 
         {/* Navigation Tabs */}
         <div className="nav-tabs">
           <button 
-            className={`nav-tab ${screen === 'home' ? 'active' : ''}`}
-            onClick={() => setScreen('home')}
+            className={`nav-tab ${route === 'setup' || route === 'scan' ? 'active' : ''}`}
+            onClick={() => navigateTo('setup')}
           >
-            Accounts
+            Setup
           </button>
           <button 
-            className={`nav-tab ${screen === 'sessions' ? 'active' : ''}`}
-            onClick={() => setScreen('sessions')}
+            className={`nav-tab ${route === 'sessions' ? 'active' : ''}`}
+            onClick={() => navigateTo('sessions')}
           >
             Sessions
             {sessions.length > 0 && <span className="badge">{sessions.length}</span>}
           </button>
         </div>
 
-        {screen === 'home' && (
+        {route === 'setup' && (
           <HomeScreen 
             accounts={accounts} 
             onAddAccount={handleAddAccount} 
             onRemoveAccount={handleRemoveAccount} 
-            onScanClick={() => setScreen('scan')} 
+            onStartScan={(account) => {
+              setScannedToken(null);
+              setSelectedAccountEmail(account.email);
+              navigateTo('scan');
+            }}
+            onViewSessions={() => navigateTo('sessions')}
           />
         )}
 
-        {screen === 'sessions' && (
+        {route === 'sessions' && (
           <SessionsScreen 
             sessions={sessions} 
             onLogout={handleLogout} 
           />
         )}
 
-        {screen === 'scan' && (
+        {route === 'scan' && (
           <ScannerScreen 
             onScanSuccess={handleScanSuccess} 
-            onCancel={() => setScreen('home')} 
-          />
-        )}
-
-        {showAccountPicker && (
-          <AccountPicker
-            accounts={accounts}
-            onSelect={(account) => approveLogin(scannedToken, account)}
             onCancel={() => {
-              setShowAccountPicker(false);
               setScannedToken(null);
-              setScreen('home');
+              setSelectedAccountEmail('');
+              navigateTo('setup');
             }}
+            selectedAccount={selectedAccount}
           />
         )}
 
       </main>
-      {showInstallModal && (
-        <InstallPrompt 
-          deferredPrompt={deferredPrompt}
-          isIOS={isIOS}
-          isStandalone={isStandalone}
-          onClose={() => setShowInstallModal(false)}
-        />
-      )}
     </GoogleOAuthProvider>
   );
 }

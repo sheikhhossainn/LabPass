@@ -109,12 +109,15 @@ function generateQR(text) {
 async function getConfig() {
   const defaults = {
     pcId: 'Lab-PC-' + Math.random().toString(36).slice(2, 6).toUpperCase(),
-    serverUrl: 'http://localhost:3001',
+    serverUrl: 'https://labpass.onrender.com',
     idleTimeout: 60,
   };
 
   try {
     const stored = await chrome.storage.sync.get(['pcId', 'serverUrl', 'idleTimeout']);
+    if (stored.serverUrl === 'http://localhost:3001') {
+      delete stored.serverUrl;
+    }
     return { ...defaults, ...stored };
   } catch {
     return defaults;

@@ -1,275 +1,353 @@
 <!doctype html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="theme-color" content="#000000" />
-    <title>LabPass | Secure PC Handoff</title>
-    <!-- Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <link rel="icon" type="image/svg+xml" href="./logo.svg" />
-    <link rel="stylesheet" href="./styles.css" />
-  </head>
-  <body>
-    <!-- Splash Screen -->
-    <div id="splash-screen" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000000; z-index: 9999; display: flex; align-items: center; justify-content: center; transition: opacity 0.5s ease; opacity: 1;">
-      <img src="./logo-animated.svg" class="splash-logo" alt="Loading..." />
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#000000" />
+  <title>LabPass | Secure PC Handoff</title>
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="icon" type="image/svg+xml" href="./logo.svg" />
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+
+<body>
+  <!-- Splash Screen -->
+  <div id="splash-screen"
+    style="position:fixed;inset:0;height:100dvh;background:#000;z-index:9999;display:flex;align-items:center;justify-content:center;transition:opacity 0.5s ease;overflow:hidden;">
+    <img src="./logo-animated.svg" alt="Loading..." style="width:140px;height:140px;display:block;margin:auto;" />
+  </div>
+  <script>
+    window.addEventListener('load', function () {
+      setTimeout(function () {
+        var s = document.getElementById('splash-screen');
+        if (s) { s.style.opacity = '0'; setTimeout(function () { s.remove(); }, 500); }
+      }, 1200);
+    });
+  </script>
+  <!-- Background Glow -->
+  <div class="glow-bg"></div>
+
+  <header class="navbar">
+    <div class="logo">
+      <img src="./logo.svg" alt="LabPass Logo" class="logo-icon" />
+      <span class="logo-text">LabPass</span>
     </div>
-    <script>
-      if ('scrollRestoration' in history) {
-        history.scrollRestoration = 'manual';
-      }
-      window.scrollTo(0, 0);
 
-      window.addEventListener('load', () => {
-        setTimeout(() => {
-          const splash = document.getElementById('splash-screen');
-          if (splash) {
-            splash.style.opacity = '0';
-            setTimeout(() => splash.remove(), 500);
-          }
-        }, 1200);
-      });
-    </script>
-    <!-- Background Glow -->
-    <div class="glow-bg"></div>
+    <!-- Hamburger Menu Toggle -->
+    <button class="menu-toggle" id="menu-toggle" aria-label="Toggle Menu">
+      <span class="menu-toggle-bar"></span>
+      <span class="menu-toggle-bar"></span>
+      <span class="menu-toggle-bar"></span>
+    </button>
 
-    <header class="navbar">
-      <div class="logo">
-        <img src="./logo.svg" alt="LabPass Logo" class="logo-icon" />
-        <span class="logo-text">LabPass</span>
+    <div class="nav-right" id="nav-right">
+      <a class="nav-link" href="#download"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18"
+          viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+          stroke-linejoin="round" class="nav-icon">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+          <polyline points="7 10 12 15 17 10" />
+          <line x1="12" y1="15" x2="12" y2="3" />
+        </svg>Get Extension</a>
+      <a class="nav-btn-app" href="#download"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18"
+          viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+          stroke-linejoin="round" class="nav-icon">
+          <rect width="14" height="20" x="5" y="2" rx="2" ry="2" />
+          <path d="M12 18h.01" />
+        </svg>Open App</a>
+      <a class="nav-button" href="https://github.com/sheikhhossainn/LabPass" target="_blank" rel="noreferrer"><svg
+          xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
+          stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+          class="lucide lucide-github">
+          <path
+            d="M15 22v-4a4.8 4.8 0 0 0-1-3.5c3 0 6-2 6-5.5.08-1.25-.27-2.48-1-3.5.28-1.15.28-2.35 0-3.5 0 0-1 0-3 1.5-2.64-.5-5.36-.5-8 0C6 2 5 2 5 2c-.3 1.15-.3 2.35 0 3.5A5.403 5.403 0 0 0 4 9c0 3.5 3 5.5 6 5.5-.39.49-.68 1.05-.85 1.65-.17.6-.22 1.23-.15 1.85v4" />
+          <path d="M9 18c-4.51 2-5-2-7-2" />
+        </svg>GitHub</a>
+    </div>
+  </header>
+
+  <main class="shell">
+    <section class="hero">
+      <div class="badge">
+        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none"
+          stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+          class="badge-github-icon" style="margin-right: 6px;">
+          <path
+            d="M15 22v-4a4.8 4.8 0 0 0-1-3.5c3 0 6-2 6-5.5.08-1.25-.27-2.48-1-3.5.28-1.15.28-2.35 0-3.5 0 0-1 0-3 1.5-2.64-.5-5.36-.5-8 0C6 2 5 2 5 2c-.3 1.15-.3 2.35 0 3.5A5.403 5.403 0 0 0 4 9c0 3.5 3 5.5 6 5.5-.39.49-.68 1.05-.85 1.65-.17.6-.22 1.23-.15 1.85v4" />
+          <path d="M9 18c-4.51 2-5-2-7-2" />
+        </svg>
+        OPEN SOURCE PROJECT
       </div>
-      
-      <!-- Hamburger Menu Toggle -->
-      <button class="menu-toggle" id="menu-toggle" aria-label="Toggle Menu">
-        <span class="menu-toggle-bar"></span>
-        <span class="menu-toggle-bar"></span>
-        <span class="menu-toggle-bar"></span>
-      </button>
+      <h1>
+        <span class="hero-line">Scan to <span class="text-login-highlight">login.</span></span>
+        <span class="hero-line hero-line-secondary">Tap to <span class="text-logout-underline">logout.</span></span>
+      </h1>
+      <p class="hero-desc">
+        LabPass replaces manual lab computer sign-ins with a secure handoff between the Chrome
+        extension on the shared PC and your phone.
+      </p>
 
-      <div class="nav-right" id="nav-right">
-        <a class="nav-link" href="#download"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="nav-icon"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>Get Extension</a>
-        <a class="nav-btn-app" href="#download"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="nav-icon"><rect width="14" height="20" x="5" y="2" rx="2" ry="2"/><path d="M12 18h.01"/></svg>Open App</a>
-        <a class="nav-button" href="https://github.com/sheikhhossainn/LabPass" target="_blank" rel="noreferrer"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-github"><path d="M15 22v-4a4.8 4.8 0 0 0-1-3.5c3 0 6-2 6-5.5.08-1.25-.27-2.48-1-3.5.28-1.15.28-2.35 0-3.5 0 0-1 0-3 1.5-2.64-.5-5.36-.5-8 0C6 2 5 2 5 2c-.3 1.15-.3 2.35 0 3.5A5.403 5.403 0 0 0 4 9c0 3.5 3 5.5 6 5.5-.39.49-.68 1.05-.85 1.65-.17.6-.22 1.23-.15 1.85v4"/><path d="M9 18c-4.51 2-5-2-7-2"/></svg>GitHub</a>
-      </div>
-    </header>
-
-    <main class="shell">
-      <section class="hero">
-        <div class="badge">
-          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="badge-github-icon" style="margin-right: 6px;"><path d="M15 22v-4a4.8 4.8 0 0 0-1-3.5c3 0 6-2 6-5.5.08-1.25-.27-2.48-1-3.5.28-1.15.28-2.35 0-3.5 0 0-1 0-3 1.5-2.64-.5-5.36-.5-8 0C6 2 5 2 5 2c-.3 1.15-.3 2.35 0 3.5A5.403 5.403 0 0 0 4 9c0 3.5 3 5.5 6 5.5-.39.49-.68 1.05-.85 1.65-.17.6-.22 1.23-.15 1.85v4"/><path d="M9 18c-4.51 2-5-2-7-2"/></svg>
-          OPEN SOURCE PROJECT
-        </div>
-        <h1>Scan to login.<br>Tap to <span class="text-highlight">logout.</span></h1>
-        <p class="hero-desc">
-          LabPass replaces manual lab computer sign-ins with a secure handoff between the Chrome
-          extension on the shared PC and your phone.
-        </p>
-        
-        <!-- Hero Diagram Card -->
-        <div class="diagram-card">
-          <!-- Top Headers -->
-          <div class="diagram-headers">
-            <div class="step-header">
-              <div class="step-num-icon">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 4H5a2 2 0 0 0-2 2v3"/><path d="M16 4h3a2 2 0 0 1 2 2v3"/><path d="M8 20H5a2 2 0 0 1-2-2v-3"/><path d="M16 20h3a2 2 0 0 0 2-2v-3"/><path d="M12 8v8"/><path d="M8 12h8"/></svg>
-              </div>
-              <div class="step-text">
-                <h3>Scan on the lab computer</h3>
-                <p>Use the Chrome extension to generate a secure QR code.</p>
-              </div>
+      <!-- Hero Diagram Card -->
+      <div class="diagram-card">
+        <!-- Top Headers -->
+        <div class="diagram-headers">
+          <div class="step-header">
+            <div class="step-num-icon">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round">
+                <path d="M8 4H5a2 2 0 0 0-2 2v3" />
+                <path d="M16 4h3a2 2 0 0 1 2 2v3" />
+                <path d="M8 20H5a2 2 0 0 1-2-2v-3" />
+                <path d="M16 20h3a2 2 0 0 0 2-2v-3" />
+                <path d="M12 8v8" />
+                <path d="M8 12h8" />
+              </svg>
             </div>
-            <div class="step-header">
-              <div class="step-num-icon">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 4H5a2 2 0 0 0-2 2v3"/><path d="M16 4h3a2 2 0 0 1 2 2v3"/><path d="M8 20H5a2 2 0 0 1-2-2v-3"/><path d="M16 20h3a2 2 0 0 0 2-2v-3"/><path d="M9 12l2 2 4-4"/></svg>
-              </div>
-              <div class="step-text">
-                <h3>Tap on your phone</h3>
-                <p>Approve the request on your phone to log in instantly.</p>
-              </div>
+            <div class="step-text">
+              <h3>Scan on the lab computer</h3>
+              <p>Use the Chrome extension to generate a secure QR code.</p>
             </div>
           </div>
-
-          <!-- Bottom Visuals Row -->
-          <div class="diagram-visuals-row">
-            <div class="diagram-visual-col">
-              <div class="laptop-wrapper">
-                <div class="laptop-screen-new">
-                  <div class="qr-code-box">
-                    <svg class="qr-code-svg" viewBox="0 0 100 100">
-                      <rect x="10" y="10" width="25" height="25" class="qr-marker" />
-                      <rect x="15" y="15" width="15" height="15" fill="none" class="qr-inner" />
-                      <rect x="65" y="10" width="25" height="25" class="qr-marker" />
-                      <rect x="70" y="15" width="15" height="15" fill="none" class="qr-inner" />
-                      <rect x="10" y="65" width="25" height="25" class="qr-marker" />
-                      <rect x="15" y="70" width="15" height="15" fill="none" class="qr-inner" />
-                      <rect x="45" y="15" width="10" height="10" class="qr-pixel" />
-                      <rect x="45" y="35" width="10" height="10" class="qr-pixel" />
-                      <rect x="15" y="45" width="10" height="10" class="qr-pixel" />
-                      <rect x="35" y="45" width="10" height="15" class="qr-pixel" />
-                      <rect x="65" y="45" width="10" height="10" class="qr-pixel" />
-                      <rect x="75" y="40" width="10" height="15" class="qr-pixel" />
-                      <rect x="40" y="65" width="15" height="10" class="qr-pixel" />
-                      <rect x="45" y="80" width="10" height="10" class="qr-pixel" />
-                      <rect x="65" y="65" width="15" height="15" class="qr-pixel" />
-                      <circle cx="50" cy="50" r="4" class="qr-center-dot" />
-                    </svg>
-                  </div>
-                </div>
-                <div class="laptop-keyboard-new"></div>
-              </div>
+          <div class="step-header">
+            <div class="step-num-icon">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round">
+                <path d="M8 4H5a2 2 0 0 0-2 2v3" />
+                <path d="M16 4h3a2 2 0 0 1 2 2v3" />
+                <path d="M8 20H5a2 2 0 0 1-2-2v-3" />
+                <path d="M16 20h3a2 2 0 0 0 2-2v-3" />
+                <path d="M9 12l2 2 4-4" />
+              </svg>
             </div>
+            <div class="step-text">
+              <h3>Tap on your phone</h3>
+              <p>Approve the request on your phone to log in instantly.</p>
+            </div>
+          </div>
+        </div>
 
-            <div class="diagram-center">
-              <div class="connector-line left-line">
-                <span class="pulse-spark"></span>
-              </div>
-              <div class="shield-container">
-                <div class="shield-halo"></div>
-                <div class="key-transfer-node">
-                  <svg class="transfer-key-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <circle cx="7.5" cy="15.5" r="5.5" />
-                    <path d="m21 3-9.6 9.6" />
-                    <path d="m15.5 7.5 3 3" />
-                    <path d="M18.5 4.5 20 6" />
+        <!-- Bottom Visuals Row -->
+        <div class="diagram-visuals-row">
+          <div class="diagram-visual-col">
+            <div class="laptop-wrapper">
+              <div class="laptop-screen-new">
+                <div class="qr-code-box">
+                  <svg class="qr-code-svg" viewBox="0 0 100 100">
+                    <rect x="10" y="10" width="25" height="25" class="qr-marker" />
+                    <rect x="15" y="15" width="15" height="15" fill="none" class="qr-inner" />
+                    <rect x="65" y="10" width="25" height="25" class="qr-marker" />
+                    <rect x="70" y="15" width="15" height="15" fill="none" class="qr-inner" />
+                    <rect x="10" y="65" width="25" height="25" class="qr-marker" />
+                    <rect x="15" y="70" width="15" height="15" fill="none" class="qr-inner" />
+                    <rect x="45" y="15" width="10" height="10" class="qr-pixel" />
+                    <rect x="45" y="35" width="10" height="10" class="qr-pixel" />
+                    <rect x="15" y="45" width="10" height="10" class="qr-pixel" />
+                    <rect x="35" y="45" width="10" height="15" class="qr-pixel" />
+                    <rect x="65" y="45" width="10" height="10" class="qr-pixel" />
+                    <rect x="75" y="40" width="10" height="15" class="qr-pixel" />
+                    <rect x="40" y="65" width="15" height="10" class="qr-pixel" />
+                    <rect x="45" y="80" width="10" height="10" class="qr-pixel" />
+                    <rect x="65" y="65" width="15" height="15" class="qr-pixel" />
+                    <circle cx="50" cy="50" r="4" class="qr-center-dot" />
                   </svg>
                 </div>
               </div>
-              <div class="connector-line right-line">
-                <span class="pulse-spark reverse"></span>
+              <div class="laptop-keyboard-new"></div>
+            </div>
+          </div>
+
+          <div class="diagram-center">
+            <div class="connector-line left-line">
+              <span class="pulse-spark"></span>
+            </div>
+            <div class="shield-container">
+              <div class="shield-halo"></div>
+              <div class="key-transfer-node">
+                <svg class="transfer-key-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                  stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="7.5" cy="15.5" r="5.5" />
+                  <path d="m21 3-9.6 9.6" />
+                  <path d="m15.5 7.5 3 3" />
+                  <path d="M18.5 4.5 20 6" />
+                </svg>
               </div>
             </div>
+            <div class="connector-line right-line">
+              <span class="pulse-spark reverse"></span>
+            </div>
+          </div>
 
-            <div class="diagram-visual-col">
-              <div class="phone-wrapper-new">
-                <div class="phone-screen-new">
-                  <div class="phone-app-mock">
-                    <div class="phone-checkbox-ring">
-                      <svg class="check-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
-                        <polyline points="20 6 9 17 4 12" />
-                      </svg>
-                    </div>
-                    <span class="phone-tap-text">Tap</span>
+          <div class="diagram-visual-col">
+            <div class="phone-wrapper-new">
+              <div class="phone-screen-new">
+                <div class="phone-app-mock">
+                  <div class="phone-checkbox-ring">
+                    <svg class="check-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+                      <polyline points="20 6 9 17 4 12" />
+                    </svg>
                   </div>
+                  <span class="phone-tap-text">Tap</span>
                 </div>
               </div>
             </div>
           </div>
         </div>
+      </div>
 
-        <div class="actions">
-          <a class="button primary pill-btn" id="start-btn" href="#how-it-works">Get Started <span class="arrow-icon">→</span></a>
-        </div>
-        <div class="badge-info-row">
-          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lock-icon" style="margin-right: 6px;"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-          <span>Free &bull; Open Source &bull; Secure by design</span>
-        </div>
-      </section>
+      <div class="actions">
+        <a class="button primary pill-btn" id="start-btn" href="#how-it-works">Get Started <span
+            class="arrow-icon">→</span></a>
+      </div>
+      <div class="badge-info-row">
+        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none"
+          stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lock-icon"
+          style="margin-right: 6px;">
+          <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+          <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+        </svg>
+        <span>Free &bull; Open Source &bull; Secure by design</span>
+      </div>
+    </section>
 
-      <section class="steps" id="how-it-works">
-        <div class="features-grid">
-          <div class="feature-card">
-            <div class="feature-icon">
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><rect x="9" y="11" width="6" height="5" rx="1"/><path d="M10 11V9a2 2 0 0 1 4 0v2"/></svg>
-            </div>
-            <div class="feature-details">
-              <h3>Secure by Design</h3>
-              <p>End-to-end encrypted handoff</p>
-            </div>
+    <section class="steps" id="how-it-works">
+      <div class="features-grid">
+        <div class="feature-card">
+          <div class="feature-icon">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+              stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+              <rect x="9" y="11" width="6" height="5" rx="1" />
+              <path d="M10 11V9a2 2 0 0 1 4 0v2" />
+            </svg>
           </div>
-          <div class="feature-card">
-            <div class="feature-icon">
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
-            </div>
-            <div class="feature-details">
-              <h3>Fast & Effortless</h3>
-              <p>Login in seconds, no typing required</p>
-            </div>
-          </div>
-          <div class="feature-card">
-            <div class="feature-icon">
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>
-            </div>
-            <div class="feature-details">
-              <h3>Cross-Platform</h3>
-              <p>Works across shared lab environments</p>
-            </div>
-          </div>
-          <div class="feature-card">
-            <div class="feature-icon">
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
-            </div>
-            <div class="feature-details">
-              <h3>Open Source</h3>
-              <p>Transparent, auditable, community driven</p>
-            </div>
+          <div class="feature-details">
+            <h3>Secure by Design</h3>
+            <p>End-to-end encrypted handoff</p>
           </div>
         </div>
-
-        <!-- Guide section: How to use it step-by-step -->
-        <div class="guide-section">
-          <h2 class="eyebrow">HOW TO USE</h2>
-          <div class="guide-grid">
-            <div class="guide-card">
-              <span class="guide-number">01</span>
-              <h3>Setup & Prep</h3>
-              <p>Install the Chrome extension on the shared lab PC. Launch the PWA on your phone and sign in with Google to establish your secure identity.</p>
-            </div>
-            <div class="guide-card">
-              <span class="guide-number">02</span>
-              <h3>Scan to Connect</h3>
-              <p>Click the extension icon on the PC to reveal the secure QR code. Scan the code using the scanner inside the mobile PWA to initiate the handoff.</p>
-            </div>
-            <div class="guide-card">
-              <span class="guide-number">03</span>
-              <h3>Approve & Logout</h3>
-              <p>Confirm the connection request on your phone to log in instantly. When finished, simply tap logout from the mobile PWA to clear all sessions.</p>
-            </div>
+        <div class="feature-card">
+          <div class="feature-icon">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+              stroke-linecap="round" stroke-linejoin="round">
+              <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
+            </svg>
+          </div>
+          <div class="feature-details">
+            <h3>Fast & Effortless</h3>
+            <p>Login in seconds, no typing required</p>
           </div>
         </div>
-
-        <div class="download-section" id="download">
-          <h2 class="eyebrow">GET STARTED WITH LABPASS</h2>
-          <div class="cta-card">
-            <div class="cta-card-content">
-              <h3>Ready to secure your lab session?</h3>
-              <p>Download the PC extension and launch the mobile web PWA to log in instantly without typing passwords.</p>
-            </div>
-            <div class="cta-card-actions">
-              <a class="cta-btn primary-cta" id="extension-link" href="#">
-                <span class="btn-main-text">Get Extension ZIP</span>
-                <span class="btn-sub-text">Click to download the package</span>
-              </a>
-              <a class="cta-btn secondary-cta" id="pwa-link" href="#">
-                <span class="btn-main-text">Open Mobile PWA</span>
-                <span class="btn-sub-text">Compatible with iOS and Android</span>
-              </a>
-            </div>
-
-            <!-- Chrome Extension Installation Guide -->
-            <div class="extension-steps">
-              <h4>Chrome Extension Installation Guide</h4>
-              <ol>
-                <li><strong>Download &amp; Extract:</strong> Click the button above to download the ZIP file, then extract it on your computer.</li>
-                <li><strong>Open Extensions:</strong> In Chrome, open a new tab and navigate to <code>chrome://extensions</code>.</li>
-                <li><strong>Developer Mode:</strong> Toggle the <strong>Developer mode</strong> switch in the top-right corner to active.</li>
-                <li><strong>Load Unpacked:</strong> Click the <strong>Load unpacked</strong> button in the top-left header.</li>
-                <li><strong>Select Folder:</strong> Choose the extracted <code>extension</code> folder inside the ZIP files, nothing else.</li>
-              </ol>
-            </div>
+        <div class="feature-card">
+          <div class="feature-icon">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+              stroke-linecap="round" stroke-linejoin="round">
+              <rect x="5" y="2" width="14" height="20" rx="2" ry="2" />
+              <line x1="12" y1="18" x2="12.01" y2="18" />
+            </svg>
+          </div>
+          <div class="feature-details">
+            <h3>Cross-Platform</h3>
+            <p>Works across shared lab environments</p>
           </div>
         </div>
-      </section>
-
-      <footer>
-        <div class="footer-content">
-          <span>&copy; 2026 LabPass. No passwords stored locally.</span>
+        <div class="feature-card">
+          <div class="feature-icon">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+              stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="16 18 22 12 16 6" />
+              <polyline points="8 6 2 12 8 18" />
+            </svg>
+          </div>
+          <div class="feature-details">
+            <h3>Open Source</h3>
+            <p>Transparent, auditable, community driven</p>
+          </div>
         </div>
-      </footer>
-    </main>
+      </div>
 
-    <script type="module" src="./main.js"></script>
-  </body>
+      <!-- Guide section: How to use it step-by-step -->
+      <div class="guide-section">
+        <h2 class="eyebrow">HOW TO USE</h2>
+        <div class="guide-grid">
+          <div class="guide-card">
+            <span class="guide-number">01</span>
+            <h3>Setup & Prep</h3>
+            <p>Install the Chrome extension on the shared lab PC. Launch the PWA on your phone and sign in with Google
+              to establish your secure identity.</p>
+          </div>
+          <div class="guide-card">
+            <span class="guide-number">02</span>
+            <h3>Scan to Connect</h3>
+            <p>Click the extension icon on the PC to reveal the secure QR code. Scan the code using the scanner inside
+              the mobile PWA to initiate the handoff.</p>
+          </div>
+          <div class="guide-card">
+            <span class="guide-number">03</span>
+            <h3>Approve & Logout</h3>
+            <p>Confirm the connection request on your phone to log in instantly. When finished, simply tap logout from
+              the mobile PWA to clear all sessions.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="download-section" id="download">
+        <h2 class="eyebrow">GET STARTED WITH LABPASS</h2>
+        <div class="cta-card">
+          <div class="cta-card-content">
+            <h3>Ready to secure your lab session?</h3>
+            <p>Download the PC extension and launch the mobile web PWA to log in instantly without typing passwords.</p>
+          </div>
+          <div class="cta-card-actions">
+            <a class="cta-btn primary-cta" id="extension-link" href="#">
+              <span class="btn-main-text">Get Extension ZIP</span>
+              <span class="btn-sub-text">Click to download the package</span>
+            </a>
+            <a class="cta-btn secondary-cta mobile-only" id="pwa-link" href="#">
+              <span class="btn-main-text">Open Mobile PWA</span>
+              <span class="btn-sub-text">Compatible with iOS and Android</span>
+            </a>
+            <div class="pwa-qr-container desktop-only">
+              <div class="qr-box">
+                <img id="pwa-qr-img" src="" alt="Scan QR to open PWA" />
+              </div>
+              <div class="qr-text">
+                <strong>Scan to get PWA</strong>
+                <span>Open on your mobile phone</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Chrome Extension Installation Guide -->
+          <div class="extension-steps">
+            <h4>Chrome Extension Installation Guide</h4>
+            <ol>
+              <li><strong>Download &amp; Extract:</strong> Click the button above to download the ZIP file, then extract
+                it on your computer.</li>
+              <li><strong>Open Extensions:</strong> In Chrome, open a new tab and navigate to
+                <code>chrome://extensions</code>.</li>
+              <li><strong>Developer Mode:</strong> Toggle the <strong>Developer mode</strong> switch in the top-right
+                corner to active.</li>
+              <li><strong>Load Unpacked:</strong> Click the <strong>Load unpacked</strong> button in the top-left
+                header.</li>
+              <li><strong>Select Folder:</strong> Choose the extracted <code>extension</code> folder inside the ZIP
+                files, nothing else.</li>
+            </ol>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <footer>
+      <div class="footer-content">
+        <span>&copy; 2026 LabPass. No passwords stored locally.</span>
+      </div>
+    </footer>
+  </main>
+
+  <script type="module" src="./main.js"></script>
+</body>
+
 </html>

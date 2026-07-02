@@ -15,7 +15,9 @@
 
   "host_permissions": [
     "*://*.google.com/*",
-    "https://localhost:3001/*"
+    "http://localhost:3001/*",
+    "https://localhost:3001/*",
+    "https://labpass.onrender.com/*"
   ],
 
   "background": {

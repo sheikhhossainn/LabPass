@@ -7,14 +7,18 @@ const toast = document.getElementById('toast');
 
 const DEFAULTS = {
   pcId: 'Lab-PC-' + Math.random().toString(36).slice(2, 6).toUpperCase(),
-  serverUrl: 'http://localhost:3001',
+  serverUrl: 'https://labpass.onrender.com',
   idleTimeout: 60,
 };
 
 // Load saved settings
 chrome.storage.sync.get(['pcId', 'serverUrl', 'idleTimeout'], (config) => {
+  let serverUrl = config.serverUrl;
+  if (serverUrl === 'http://localhost:3001') {
+    serverUrl = DEFAULTS.serverUrl;
+  }
   pcIdInput.value = config.pcId || DEFAULTS.pcId;
-  serverUrlInput.value = config.serverUrl || DEFAULTS.serverUrl;
+  serverUrlInput.value = serverUrl || DEFAULTS.serverUrl;
   idleTimeoutSelect.value = String(config.idleTimeout || DEFAULTS.idleTimeout);
 });
 
