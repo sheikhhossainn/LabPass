@@ -109,8 +109,8 @@ function generateQR(text) {
 async function getConfig() {
   const defaults = {
     pcId: 'Lab-PC-' + Math.random().toString(36).slice(2, 6).toUpperCase(),
-    serverUrl: 'https://localhost:3001',
-    idleTimeout: 15,
+    serverUrl: 'http://localhost:3001',
+    idleTimeout: 60,
   };
 
   try {

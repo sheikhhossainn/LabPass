@@ -5,15 +5,17 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>LabPass Settings</title>
   <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
     :root {
-      --bg: #0b1120;
-      --surface: #111827;
-      --border: rgba(148, 163, 184, 0.12);
-      --text: #e2e8f0;
-      --text-muted: #8896ab;
-      --accent: #6366f1;
-      --accent-glow: rgba(99, 102, 241, 0.25);
-      --green: #34d399;
+      --bg: #000000;
+      --surface: #0a0a0a;
+      --border: #1f1f1f;
+      --text: #ffffff;
+      --text-muted: #a1a1aa;
+      --accent: #10b981;
+      --accent-glow: rgba(16, 185, 129, 0.25);
+      --green: #10b981;
       --radius: 12px;
     }
 
@@ -21,7 +23,7 @@
 
     body {
       width: 360px;
-      font-family: 'Segoe UI', system-ui, sans-serif;
+      font-family: 'Inter', system-ui, sans-serif;
       background: var(--bg);
       color: var(--text);
       padding: 20px;
@@ -39,12 +41,7 @@
       width: 30px;
       height: 30px;
       border-radius: 8px;
-      background: linear-gradient(135deg, var(--accent), #8b5cf6);
-      display: grid;
-      place-items: center;
-      color: white;
-      font-size: 0.65rem;
-      font-weight: 800;
+      object-fit: contain;
     }
 
     .field {
@@ -104,12 +101,13 @@
     }
 
     .btn-save {
-      background: linear-gradient(135deg, var(--accent), #8b5cf6);
-      color: white;
-      box-shadow: 0 4px 14px var(--accent-glow);
+      background: var(--text);
+      color: #000000;
+      box-shadow: 0 0 14px rgba(255, 255, 255, 0.1);
     }
 
     .btn-save:hover {
+      background: var(--accent);
       transform: translateY(-1px);
       box-shadow: 0 6px 20px var(--accent-glow);
     }
@@ -147,7 +145,7 @@
   </style>
 </head>
 <body>
-  <h1><span class="icon">LP</span> LabPass Settings</h1>
+  <h1><img src="icons/icon-48.png" alt="LabPass Logo" class="icon" /> LabPass Settings</h1>
 
   <div class="field">
     <label for="pc-id">PC Name / Lab Identifier</label>
@@ -157,18 +155,16 @@
 
   <div class="field">
     <label for="server-url">Server URL</label>
-    <input type="url" id="server-url" placeholder="https://localhost:3001" />
+    <input type="url" id="server-url" placeholder="http://localhost:3001" />
     <p class="hint">The LabPass relay server address.</p>
   </div>
 
   <div class="field">
     <label for="idle-timeout">Auto-logout after idle (minutes)</label>
     <select id="idle-timeout">
-      <option value="5">5 minutes</option>
-      <option value="10">10 minutes</option>
-      <option value="15" selected>15 minutes</option>
-      <option value="30">30 minutes</option>
-      <option value="60">60 minutes</option>
+      <option value="60" selected>1 hour (60 minutes)</option>
+      <option value="120">2 hours (120 minutes)</option>
+      <option value="180">3 hours (180 minutes)</option>
     </select>
     <p class="hint">Automatically clears the session when the PC is idle.</p>
   </div>
@@ -180,50 +176,6 @@
 
   <div class="toast" id="toast">Settings saved ✓</div>
 
-  <script>
-    const pcIdInput = document.getElementById('pc-id');
-    const serverUrlInput = document.getElementById('server-url');
-    const idleTimeoutSelect = document.getElementById('idle-timeout');
-    const saveBtn = document.getElementById('save-btn');
-    const resetBtn = document.getElementById('reset-btn');
-    const toast = document.getElementById('toast');
-
-    const DEFAULTS = {
-      pcId: 'Lab-PC-' + Math.random().toString(36).slice(2, 6).toUpperCase(),
-      serverUrl: 'https://localhost:3001',
-      idleTimeout: 15,
-    };
-
-    // Load saved settings
-    chrome.storage.sync.get(['pcId', 'serverUrl', 'idleTimeout'], (config) => {
-      pcIdInput.value = config.pcId || DEFAULTS.pcId;
-      serverUrlInput.value = config.serverUrl || DEFAULTS.serverUrl;
-      idleTimeoutSelect.value = String(config.idleTimeout || DEFAULTS.idleTimeout);
-    });
-
-    function showToast() {
-      toast.classList.add('show');
-      setTimeout(() => toast.classList.remove('show'), 2000);
-    }
-
-    saveBtn.addEventListener('click', () => {
-      const pcId = pcIdInput.value.trim() || DEFAULTS.pcId;
-      const serverUrl = serverUrlInput.value.trim() || DEFAULTS.serverUrl;
-      const idleTimeout = parseInt(idleTimeoutSelect.value, 10) || DEFAULTS.idleTimeout;
-
-      chrome.storage.sync.set({ pcId, serverUrl, idleTimeout }, () => {
-        showToast();
-
-        // Update idle detection interval
-        chrome.idle.setDetectionInterval(idleTimeout * 60);
-      });
-    });
-
-    resetBtn.addEventListener('click', () => {
-      pcIdInput.value = DEFAULTS.pcId;
-      serverUrlInput.value = DEFAULTS.serverUrl;
-      idleTimeoutSelect.value = String(DEFAULTS.idleTimeout);
-    });
-  </script>
+  <script src="options.js"></script>
 </body>
 </html>

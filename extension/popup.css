@@ -1,16 +1,18 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
 /* ── LabPass Extension Popup ── */
 
 :root {
-  --bg: #0b1120;
-  --surface: #111827;
-  --surface-2: #1a2236;
-  --border: rgba(148, 163, 184, 0.12);
-  --text: #e2e8f0;
-  --text-muted: #8896ab;
-  --accent: #6366f1;
-  --accent-glow: rgba(99, 102, 241, 0.25);
-  --green: #34d399;
-  --green-glow: rgba(52, 211, 153, 0.2);
+  --bg: #000000;
+  --surface: #0a0a0a;
+  --surface-2: #141414;
+  --border: #1f1f1f;
+  --text: #ffffff;
+  --text-muted: #a1a1aa;
+  --accent: #10b981; /* Emerald Green */
+  --accent-glow: rgba(16, 185, 129, 0.25);
+  --green: #10b981;
+  --green-glow: rgba(16, 185, 129, 0.2);
   --red: #f87171;
   --red-bg: rgba(248, 113, 113, 0.12);
   --radius: 14px;
@@ -25,7 +27,7 @@
 body {
   width: 360px;
   min-height: 480px;
-  font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
   background: var(--bg);
   color: var(--text);
   overflow: hidden;
@@ -59,11 +61,7 @@ body {
   border-radius: 10px;
   display: grid;
   place-items: center;
-  color: white;
-  font-weight: 800;
-  font-size: 0.7rem;
-  background: linear-gradient(135deg, #6366f1, #8b5cf6);
-  box-shadow: 0 4px 14px var(--accent-glow);
+  object-fit: contain;
 }
 
 .logo-text h1 {
@@ -201,7 +199,7 @@ body {
 .timer-fill {
   height: 100%;
   width: 100%;
-  background: linear-gradient(90deg, var(--accent), #8b5cf6);
+  background: var(--accent);
   border-radius: 4px;
   transition: width 1s linear;
 }
@@ -362,13 +360,14 @@ body {
 }
 
 .btn-primary {
-  background: linear-gradient(135deg, var(--accent), #8b5cf6);
-  color: white;
-  box-shadow: 0 4px 14px var(--accent-glow);
+  background: var(--text);
+  color: #000000;
+  box-shadow: 0 0 14px rgba(255, 255, 255, 0.1);
 }
 
 .btn-primary:hover {
-  box-shadow: 0 6px 20px var(--accent-glow);
+  background: var(--accent);
+  box-shadow: 0 0 20px var(--accent-glow);
   transform: translateY(-1px);
 }
 
