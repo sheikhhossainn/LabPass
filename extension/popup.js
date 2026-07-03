@@ -31,7 +31,6 @@ const errorMessage = $('#error-message');
 /* ── State ── */
 let currentSessionToken = null;
 let countdownInterval = null;
-let refreshInterval = null;
 
 /* ── Helpers ── */
 
@@ -53,7 +52,6 @@ function formatTime(isoString) {
 
 function startCountdown(expiresAt) {
   clearInterval(countdownInterval);
-  clearInterval(refreshInterval);
   const expiry = new Date(expiresAt).getTime();
   const total = expiry - Date.now();
 
@@ -68,11 +66,6 @@ function startCountdown(expiresAt) {
       initSession(); // regenerate
     }
   }, 1000);
-
-  // Refresh QR every 20 seconds to keep it fresh
-  refreshInterval = setInterval(() => {
-    initSession();
-  }, 20000);
 }
 
 function generateQR(text) {

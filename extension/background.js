@@ -267,8 +267,8 @@ async function ensureConnection() {
 
   let session = currentSession;
   if (!session) {
-    const stored = await chrome.storage.local.get(['activeSession', 'pendingSession']);
-    session = stored.activeSession || stored.pendingSession || null;
+    const stored = await chrome.storage.local.get(['activeSession']);
+    session = stored.activeSession || null;
   }
 
   if (!session || !session.sessionToken || !session.serverUrl) {
@@ -308,7 +308,5 @@ chrome.alarms.onAlarm.addListener((alarm) => {
     chrome.action.setBadgeText({ text: '1' });
     chrome.action.setBadgeBackgroundColor({ color: '#34d399' });
     log('Restored active session');
-  } else if (currentSession && currentSession.status === 'pending') {
-    log('Restored pending session, rebinding socket');
   }
 })();
