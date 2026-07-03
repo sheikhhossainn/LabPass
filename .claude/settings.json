@@ -1,0 +1,15 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(curl -s -o /dev/null -w \"HTTP %{http_code}\\\\n\" https://labpass.onrender.com/health --max-time 15)",
+      "Bash(curl -s https://labpass.onrender.com/health --max-time 15)",
+      "Bash(curl -s \"https://labpass.onrender.com/socket.io/?EIO=4&transport=polling\" --max-time 15)",
+      "Bash(curl -s -X POST https://labpass.onrender.com/session/create -H \"Content-Type: application/json\" -d '{\"pcId\":\"debug-check\"}' --max-time 15)",
+      "Bash(curl -s -i -X OPTIONS https://labpass.onrender.com/session/create -H \"Origin: https://labpassmobile.vercel.app\" -H \"Access-Control-Request-Method: POST\" --max-time 15)",
+      "Bash(node -c index.js)",
+      "Bash(node -c src/sessionStore.js)",
+      "Bash(node --check extension/background.js)",
+      "Bash(node --check pwa/src/App.jsx)"
+    ]
+  }
+}

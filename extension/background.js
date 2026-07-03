@@ -91,6 +91,7 @@ function connectSocket(serverUrl, sessionToken) {
     };
 
     await chrome.storage.local.set({ activeSession: currentSession });
+    await chrome.storage.local.remove('pendingSession');
 
     // Update badge
     chrome.action.setBadgeText({ text: '1' });
@@ -162,7 +163,7 @@ async function cleanupSession(reason) {
 
   // Clear stored session
   currentSession = null;
-  await chrome.storage.local.remove('activeSession');
+  await chrome.storage.local.remove(['activeSession', 'pendingSession']);
 
   // Reset badge
   chrome.action.setBadgeText({ text: '' });
@@ -215,6 +216,12 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         status: 'pending',
       };
 
+      // Persist immediately: the QR is displayed and waiting to be scanned,
+      // which can outlive this service worker instance (MV3 SWs are killed
+      // after ~30s idle). Without this, a SW restart during that wait has
+      // nothing to reconnect/rebind, silently orphaning a still-valid QR.
+      chrome.storage.local.set({ pendingSession: currentSession }).catch(() => {});
+
       connectSocket(message.serverUrl, message.sessionToken);
       sendResponse({ ok: true });
       break;
@@ -243,31 +250,65 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   return true; // keep channel open for async sendResponse
 });
 
+/* ── Connection Watchdog ──
+ * MV3 kills this service worker after ~30s of inactivity, which drops the
+ * socket. A plain setInterval keepalive doesn't prevent that (it doesn't
+ * count as extension activity), so a QR can still be within its 5-minute
+ * TTL server-side while its socket binding is dead. chrome.alarms survives
+ * SW death and wakes it back up on schedule, so we use it to detect a lost
+ * connection and rebind — for either a pending (not-yet-scanned) QR or an
+ * already-active session.
+ */
+
+async function ensureConnection() {
+  if (socket && socket.connected) {
+    return;
+  }
+
+  let session = currentSession;
+  if (!session) {
+    const stored = await chrome.storage.local.get(['activeSession', 'pendingSession']);
+    session = stored.activeSession || stored.pendingSession || null;
+  }
+
+  if (!session || !session.sessionToken || !session.serverUrl) {
+    return;
+  }
+
+  if (session.expiresAt && new Date(session.expiresAt).getTime() <= Date.now()) {
+    if (session.status === 'active') {
+      await cleanupSession('expired');
+    } else {
+      currentSession = null;
+      await chrome.storage.local.remove('pendingSession');
+    }
+    return;
+  }
+
+  currentSession = session;
+  log('Watchdog reconnecting socket for', session.status, 'session');
+  connectSocket(session.serverUrl, session.sessionToken);
+}
+
+chrome.alarms.create('labpass-watchdog', { periodInMinutes: 1 });
+chrome.alarms.onAlarm.addListener((alarm) => {
+  if (alarm.name === 'labpass-watchdog') {
+    ensureConnection();
+  }
+});
+
 /* ── Init ── */
 
 (async () => {
   log('Background service worker started');
   await setupIdleDetection();
+  await ensureConnection();
 
-  // Restore session on SW restart
-  try {
-    const stored = await chrome.storage.local.get(['activeSession']);
-    if (stored.activeSession && stored.activeSession.sessionToken) {
-      const session = stored.activeSession;
-      const now = Date.now();
-      const expires = new Date(session.expiresAt).getTime();
-
-      if (expires > now) {
-        currentSession = session;
-        connectSocket(session.serverUrl, session.sessionToken);
-        chrome.action.setBadgeText({ text: '1' });
-        chrome.action.setBadgeBackgroundColor({ color: '#34d399' });
-        log('Restored active session');
-      } else {
-        await cleanupSession('expired');
-      }
-    }
-  } catch (err) {
-    log('Session restore failed:', err);
+  if (currentSession && currentSession.status === 'active') {
+    chrome.action.setBadgeText({ text: '1' });
+    chrome.action.setBadgeBackgroundColor({ color: '#34d399' });
+    log('Restored active session');
+  } else if (currentSession && currentSession.status === 'pending') {
+    log('Restored pending session, rebinding socket');
   }
 })();

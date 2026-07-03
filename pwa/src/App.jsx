@@ -121,6 +121,29 @@ export default function App() {
     return s;
   }, []);
 
+  // Registers the events every socket needs to stay in sync with app state.
+  // A QR can embed a non-default relay URL, in which case getSocketForUrl
+  // below creates a brand new socket instance — it must get these same
+  // listeners, or events on it (e.g. session-expired) go unheard.
+  const attachCoreListeners = (s) => {
+    s.off('login-approved');
+    s.off('logout');
+    s.off('session-expired');
+    s.on('login-approved', (data) => {
+      console.log('Login approved via socket', data);
+      setRoute('sessions');
+      setRouteHash('sessions');
+    });
+    s.on('logout', (data) => {
+      console.log('Logout via socket', data);
+      setSessions((prev) => prev.filter((x) => x.sessionToken !== data.sessionToken));
+    });
+    s.on('session-expired', (data) => {
+      console.log('Session expired via socket', data);
+      setSessions((prev) => prev.filter((x) => x.sessionToken !== data.sessionToken));
+    });
+  };
+
   // Helper: get or create a socket connected to a specific URL
   const getSocketForUrl = (url) => {
     if (!url || url === backendUrl) return socketRef.current;
@@ -133,6 +156,7 @@ export default function App() {
       socketRef.current.disconnect();
     }
     const newSocket = io(url, { transports: ['websocket'] });
+    attachCoreListeners(newSocket);
     socketRef.current = newSocket;
     return newSocket;
   };
@@ -223,19 +247,7 @@ export default function App() {
   }, [accounts]);
 
   useEffect(() => {
-    socket.on('login-approved', (data) => {
-      console.log('Login approved via socket', data);
-      setRoute('sessions');
-      setRouteHash('sessions');
-    });
-    socket.on('logout', (data) => {
-      console.log('Logout via socket', data);
-      setSessions(s => s.filter(x => x.sessionToken !== data.sessionToken));
-    });
-    socket.on('session-expired', (data) => {
-      console.log('Session expired via socket', data);
-      setSessions(s => s.filter(x => x.sessionToken !== data.sessionToken));
-    });
+    attachCoreListeners(socket);
 
     return () => {
       socket.off('login-approved');
@@ -366,8 +378,18 @@ export default function App() {
     if (activeSocket.connected) {
       emit();
     } else {
-      // Wait for connection then emit
-      activeSocket.once('connect', emit);
+      // Wait for connection then emit, but don't hang forever if the
+      // relay is unreachable (e.g. wrong/blocked server URL).
+      const connectTimer = setTimeout(() => {
+        activeSocket.off('connect', onConnect);
+        setScanError('Could not reach the LabPass server. Check your connection and try again.');
+        setScanAttempt((n) => n + 1);
+      }, 8000);
+      const onConnect = () => {
+        clearTimeout(connectTimer);
+        emit();
+      };
+      activeSocket.once('connect', onConnect);
       activeSocket.connect();
     }
   };

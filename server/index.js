@@ -368,6 +368,14 @@ async function main() {
         return;
       }
 
+      const targetSocket = session.socketId ? io.sockets.sockets.get(session.socketId) : null;
+      if (!targetSocket || !targetSocket.connected) {
+        if (typeof ack === 'function') {
+          ack({ ok: false, error: 'The lab computer is not connected. Please refresh the QR code and try again.' });
+        }
+        return;
+      }
+
       // Extract user info from payload
       let userEmail = payload.email || null;
       let displayName = payload.displayName || null;
@@ -414,7 +422,7 @@ async function main() {
         await expireSession(io, expiredToken, 'timeout');
       });
 
-      io.to(session.socketId || socket.id).emit('login-approved', {
+      targetSocket.emit('login-approved', {
         sessionToken: payload.sessionToken,
         encryptedPayload: payload.encryptedPayload,
         email: userEmail,

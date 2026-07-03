@@ -10,7 +10,8 @@
     "browsingData",
     "storage",
     "idle",
-    "activeTab"
+    "activeTab",
+    "alarms"
   ],
 
   "host_permissions": [
