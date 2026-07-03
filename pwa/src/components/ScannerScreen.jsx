@@ -28,6 +28,20 @@ function logTrackSettings(html5QrCode, label) {
   }
 }
 
+// Passing `videoConstraints` makes html5-qrcode use it as the entire
+// getUserMedia constraints, replacing (not merging with) whatever facingMode
+// config was passed as the first start() argument — so facingMode has to live
+// in here too. Also requests a real resolution instead of letting the library's
+// `aspectRatio: 1.0` force a tiny cropped 480x480 square, which was too low-res
+// for the decoder to ever find the QR code in frame.
+function buildVideoConstraints(exact) {
+  return {
+    facingMode: exact ? { exact: 'environment' } : { ideal: 'environment' },
+    width: { ideal: 1920 },
+    height: { ideal: 1080 },
+  };
+}
+
 export default function ScannerScreen({ onScanSuccess, onCancel, selectedAccount, loginError }) {
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -50,21 +64,16 @@ export default function ScannerScreen({ onScanSuccess, onCancel, selectedAccount
     const startScanner = async () => {
       try {
         const isMobileDevice = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-        
-        let config = { facingMode: "environment" };
-        if (isMobileDevice) {
-          config = { facingMode: { exact: "environment" } };
-        }
-        
+
         const scanErrorLogger = makeThrottledScanErrorLogger('main');
 
-        const launch = async (cameraConfig) => {
+        const launch = async (videoConstraints) => {
           await html5QrCode.start(
-            cameraConfig,
+            { facingMode: "environment" },
             {
               fps: 10,
               qrbox: { width: 250, height: 250 },
-              aspectRatio: 1.0,
+              videoConstraints,
             },
             (decodedText) => {
               logDebug('QR decoded:', decodedText, 'isScanning:', isScanningRef.current);
@@ -83,10 +92,10 @@ export default function ScannerScreen({ onScanSuccess, onCancel, selectedAccount
         };
 
         try {
-          await launch(config);
+          await launch(buildVideoConstraints(isMobileDevice));
         } catch (firstErr) {
           logDebug('Exact environment constraint failed, trying fallback:', firstErr.message || firstErr);
-          await launch({ facingMode: "environment" });
+          await launch(buildVideoConstraints(false));
         }
 
         isScanningRef.current = true;
@@ -126,20 +135,16 @@ export default function ScannerScreen({ onScanSuccess, onCancel, selectedAccount
     const html5QrCode = qrCodeRef.current;
     if (html5QrCode) {
       const isMobileDevice = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-      let config = { facingMode: "environment" };
-      if (isMobileDevice) {
-        config = { facingMode: { exact: "environment" } };
-      }
 
       const scanErrorLogger = makeThrottledScanErrorLogger('retry');
 
-      const launch = (cameraConfig) => {
+      const launch = (videoConstraints) => {
         return html5QrCode.start(
-          cameraConfig,
+          { facingMode: "environment" },
           {
             fps: 10,
             qrbox: { width: 250, height: 250 },
-            aspectRatio: 1.0,
+            videoConstraints,
           },
           (decodedText) => {
             logDebug('QR decoded:', decodedText, 'isScanning:', isScanningRef.current);
@@ -157,7 +162,7 @@ export default function ScannerScreen({ onScanSuccess, onCancel, selectedAccount
         );
       };
 
-      launch(config)
+      launch(buildVideoConstraints(isMobileDevice))
       .then(() => {
         isScanningRef.current = true;
         setLoading(false);
@@ -165,7 +170,7 @@ export default function ScannerScreen({ onScanSuccess, onCancel, selectedAccount
       })
       .catch((err) => {
         logDebug('Failed with exact constraint on retry, trying fallback:', err.message || err);
-        launch({ facingMode: "environment" })
+        launch(buildVideoConstraints(false))
         .then(() => {
           isScanningRef.current = true;
           setLoading(false);
