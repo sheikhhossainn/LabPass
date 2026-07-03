@@ -11,7 +11,8 @@
       "Bash(node --check extension/background.js)",
       "Bash(node --check pwa/src/App.jsx)",
       "Bash(node -c popup.js)",
-      "Bash(node -c background.js)"
+      "Bash(node -c background.js)",
+      "Bash(git commit *)"
     ]
   }
 }
