@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Html5Qrcode } from 'html5-qrcode';
+import { logDebug } from '../lib/debugLog';
 
 export default function ScannerScreen({ onScanSuccess, onCancel, selectedAccount, loginError }) {
   const [error, setError] = useState(null);
@@ -38,6 +39,7 @@ export default function ScannerScreen({ onScanSuccess, onCancel, selectedAccount
               aspectRatio: 1.0,
             },
             (decodedText) => {
+              logDebug('QR decoded:', decodedText, 'isScanning:', isScanningRef.current);
               if (isScanningRef.current) {
                 isScanningRef.current = false;
                 html5QrCode.stop()
@@ -55,15 +57,16 @@ export default function ScannerScreen({ onScanSuccess, onCancel, selectedAccount
         try {
           await launch(config);
         } catch (firstErr) {
-          console.warn('Failed to start camera with exact environment constraint, trying fallback:', firstErr);
+          logDebug('Exact environment constraint failed, trying fallback:', firstErr.message || firstErr);
           await launch({ facingMode: "environment" });
         }
 
         isScanningRef.current = true;
         setLoading(false);
         setError(null);
+        logDebug('Camera started, scanning for QR...');
       } catch (err) {
-        console.error('Error starting scanner:', err);
+        logDebug('Error starting scanner:', err.message || err);
         isScanningRef.current = false;
         setLoading(false);
         setError(
@@ -108,6 +111,7 @@ export default function ScannerScreen({ onScanSuccess, onCancel, selectedAccount
             aspectRatio: 1.0,
           },
           (decodedText) => {
+            logDebug('QR decoded:', decodedText, 'isScanning:', isScanningRef.current);
             if (isScanningRef.current) {
               isScanningRef.current = false;
               html5QrCode.stop()

@@ -6,9 +6,11 @@ import HomeScreen from './components/HomeScreen';
 import ScannerScreen from './components/ScannerScreen';
 import SessionsScreen from './components/SessionsScreen';
 import InstallGate from './components/InstallGate';
+import DebugPanel from './components/DebugPanel';
 
 import { getAccounts, addAccount, removeAccount } from './lib/db';
 import { encryptPayload, decodeIdToken } from './lib/crypto';
+import { logDebug } from './lib/debugLog';
 
 const _isLocal = typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
 const backendUrl = import.meta.env.VITE_BACKEND_URL
@@ -314,9 +316,11 @@ export default function App() {
   };
 
   const handleScanSuccess = (decodedText) => {
+    logDebug('handleScanSuccess called with:', decodedText);
     const account = selectedAccount || (accounts.length === 1 ? accounts[0] : null);
 
     if (!account) {
+      logDebug('No account selected, aborting scan handling');
       alert('Select an account before scanning.');
       navigateTo('setup');
       return;
@@ -330,8 +334,9 @@ export default function App() {
       const parsed = JSON.parse(decodedText);
       token = parsed.token || decodedText;
       qrServerUrl = parsed.server || null;
+      logDebug('Parsed QR ->', { token, qrServerUrl });
     } catch {
-      // Raw token string — no server field
+      logDebug('QR content was not JSON, using raw text as token');
     }
 
     setScannedToken(token);
@@ -370,6 +375,7 @@ export default function App() {
         pictureUrl: account.pictureUrl,
         encryptedPayload: encryptPayload(payload),
       }, (err, ack) => {
+        logDebug('login-approved ack ->', err ? `timeout: ${err.message || err}` : ack);
         if (err || !ack || !ack.ok) {
           setScanError(
             err
@@ -388,6 +394,7 @@ export default function App() {
       });
     };
 
+    logDebug('approveLogin: socket connected?', activeSocket.connected, 'url:', activeSocket.io && activeSocket.io.uri);
     if (activeSocket.connected) {
       emit();
     } else {
@@ -395,11 +402,13 @@ export default function App() {
       // relay is unreachable (e.g. wrong/blocked server URL).
       const connectTimer = setTimeout(() => {
         activeSocket.off('connect', onConnect);
+        logDebug('approveLogin: socket never connected within 8s');
         setScanError('Could not reach the LabPass server. Check your connection and try again.');
         setScanAttempt((n) => n + 1);
       }, 8000);
       const onConnect = () => {
         clearTimeout(connectTimer);
+        logDebug('approveLogin: socket connected, emitting now');
         emit();
       };
       activeSocket.once('connect', onConnect);
@@ -511,6 +520,7 @@ export default function App() {
         )}
 
       </main>
+      <DebugPanel />
     </GoogleOAuthProvider>
   );
 }
