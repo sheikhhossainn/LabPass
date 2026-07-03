@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { GoogleOAuthProvider } from '@react-oauth/google';
 import { io } from 'socket.io-client';
 
@@ -341,6 +341,19 @@ export default function App() {
     approveLogin(token, account, targetSocket);
   };
 
+  // handleScanSuccess is a new function on every render, but ScannerScreen's
+  // camera-init effect depends on the identity of onScanSuccess. Passing it
+  // directly caused the camera to be torn down and restarted on every
+  // App re-render (e.g. the 30s session-polling interval) while the user
+  // was mid-scan, so decodes could be silently lost. This ref indirection
+  // keeps the prop identity stable for the life of the component while
+  // still always calling the latest closure.
+  const handleScanSuccessRef = useRef(handleScanSuccess);
+  handleScanSuccessRef.current = handleScanSuccess;
+  const stableHandleScanSuccess = useCallback((decodedText) => {
+    handleScanSuccessRef.current(decodedText);
+  }, []);
+
   const approveLogin = (token, account, targetSocket) => {
     const activeSocket = targetSocket || socketRef.current;
     const payload = {
@@ -485,7 +498,7 @@ export default function App() {
         {route === 'scan' && (
           <ScannerScreen
             key={scanAttempt}
-            onScanSuccess={handleScanSuccess}
+            onScanSuccess={stableHandleScanSuccess}
             onCancel={() => {
               setScannedToken(null);
               setScanError(null);
