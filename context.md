@@ -3,7 +3,7 @@
 QR-based quick login/logout for shared university lab computers.  
 PWA (phone) + Chrome Extension (lab PC) + Relay Server (socket.io).
 
-**Latest (v1.2)**: Fixed silent QR scan failures — server now verifies the extension's socket is actually alive before acking success, extension self-heals its socket after MV3 kills the service worker, and the PWA no longer thrashes the camera mid-scan.
+**Latest (v1.2)**: Fixed silent QR scan failures — server now verifies the extension's socket is actually alive before acking success, extension self-heals its socket after MV3 kills the service worker, PWA no longer thrashes the camera mid-scan, and extension popup refreshes QR display every 20s to keep it fresh.
 
 **v1.1**: Fixed QR timeout (60s→5min), added login-approved acks with retry, error banner, auto-update PWA.
 
