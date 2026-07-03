@@ -123,21 +123,6 @@ export default function HomeScreen({ accounts, onAddAccount, onRemoveAccount, on
         </ol>
       </div>
 
-      {accounts.length > 1 && (
-        <p className="setup-lead" style={{ marginTop: '8px' }}>
-          Choose one account above to begin scanning.
-        </p>
-      )}
-
-      {accounts.length === 1 && (
-        <button className="scan-fab animate-in" onClick={() => onStartScan(accounts[0])}>
-          Scan with this account
-        </button>
-      )}
-
-      <button className="btn-secondary w-full mt-4" onClick={onViewSessions}>
-        View Sessions
-      </button>
     </section>
   );
 }

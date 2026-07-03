@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { GoogleOAuthProvider } from '@react-oauth/google';
 import { io } from 'socket.io-client';
 
@@ -10,7 +10,10 @@ import InstallGate from './components/InstallGate';
 import { getAccounts, addAccount, removeAccount } from './lib/db';
 import { encryptPayload, decodeIdToken } from './lib/crypto';
 
-const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3001';
+const _isLocal = typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
+const backendUrl = import.meta.env.VITE_BACKEND_URL
+  ? (_isLocal ? import.meta.env.VITE_BACKEND_URL : (import.meta.env.VITE_BACKEND_URL === 'http://localhost:3001' ? 'https://labpass.onrender.com' : import.meta.env.VITE_BACKEND_URL))
+  : (_isLocal ? 'http://localhost:3001' : 'https://labpass.onrender.com');
 const googleClientId = import.meta.env.VITE_GOOGLE_CLIENT_ID || 'missing-client-id';
 
 function getInstalledState() {
@@ -109,7 +112,28 @@ export default function App() {
     };
   }, []);
 
-  const socket = useMemo(() => io(backendUrl, { transports: ['websocket'] }), []);
+  const socketRef = useRef(null);
+  const socket = useMemo(() => {
+    const s = io(backendUrl, { transports: ['websocket'] });
+    socketRef.current = s;
+    return s;
+  }, []);
+
+  // Helper: get or create a socket connected to a specific URL
+  const getSocketForUrl = (url) => {
+    if (!url || url === backendUrl) return socketRef.current;
+    // If already connected to this url, reuse
+    if (socketRef.current && socketRef.current.io && socketRef.current.io.uri === url && socketRef.current.connected) {
+      return socketRef.current;
+    }
+    // Disconnect old socket if pointing elsewhere
+    if (socketRef.current && socketRef.current.io && socketRef.current.io.uri !== url) {
+      socketRef.current.disconnect();
+    }
+    const newSocket = io(url, { transports: ['websocket'] });
+    socketRef.current = newSocket;
+    return newSocket;
+  };
 
   useEffect(() => {
     if (!isInstalled) {
@@ -285,39 +309,53 @@ export default function App() {
     }
 
     let token = decodedText;
-    
-    // Parse QR if it's JSON (the extension sends JSON)
+    let qrServerUrl = null;
+
+    // Parse QR — extension encodes { token, server }
     try {
       const parsed = JSON.parse(decodedText);
-      token = parsed.token;
+      token = parsed.token || decodedText;
+      qrServerUrl = parsed.server || null;
     } catch {
-      // If it's just the raw token string
+      // Raw token string — no server field
     }
 
     setScannedToken(token);
-    
-    approveLogin(token, account);
+
+    // Use the server from the QR so we hit the same relay the extension is on
+    const targetSocket = qrServerUrl ? getSocketForUrl(qrServerUrl) : socketRef.current;
+    approveLogin(token, account, targetSocket);
   };
 
-  const approveLogin = (token, account) => {
+  const approveLogin = (token, account, targetSocket) => {
+    const activeSocket = targetSocket || socketRef.current;
     const payload = {
       email: account.email,
       displayName: account.displayName,
       pictureUrl: account.pictureUrl,
     };
 
-    socket.emit('login-approved', {
-      sessionToken: token,
-      email: account.email,
-      displayName: account.displayName,
-      pictureUrl: account.pictureUrl,
-      encryptedPayload: encryptPayload(payload),
-    });
-    
-    setSelectedAccountEmail('');
-    setScannedToken(null);
-    setRoute('sessions');
-    setRouteHash('sessions');
+    const emit = () => {
+      activeSocket.emit('login-approved', {
+        sessionToken: token,
+        email: account.email,
+        displayName: account.displayName,
+        pictureUrl: account.pictureUrl,
+        encryptedPayload: encryptPayload(payload),
+      });
+      setSelectedAccountEmail('');
+      setScannedToken(null);
+      setRoute('sessions');
+      setRouteHash('sessions');
+    };
+
+    if (activeSocket.connected) {
+      emit();
+    } else {
+      // Wait for connection then emit
+      activeSocket.once('connect', emit);
+      activeSocket.connect();
+    }
   };
 
   const handleLogout = (sessionToken) => {
