@@ -153,7 +153,6 @@ async function cleanupSession(reason) {
         cookies: true,
         cache: true,
         localStorage: true,
-        sessionStorage: true,
       }
     );
     log('Browsing data cleared');

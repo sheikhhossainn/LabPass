@@ -2,6 +2,32 @@ import React, { useEffect, useRef, useState } from 'react';
 import { Html5Qrcode } from 'html5-qrcode';
 import { logDebug } from '../lib/debugLog';
 
+// html5-qrcode calls this on every failed decode attempt (up to `fps` times/sec),
+// so log a throttled heartbeat instead of spamming — this is the only way to see
+// whether the scan loop is actually running and what it's seeing (nothing in
+// frame vs. a code it can't quite decode) when a scan silently "does nothing".
+function makeThrottledScanErrorLogger(label) {
+  let count = 0;
+  let lastLogAt = 0;
+  return (message) => {
+    count += 1;
+    const now = Date.now();
+    if (now - lastLogAt > 3000) {
+      lastLogAt = now;
+      logDebug(`[${label}] scan attempts so far: ${count}, last message:`, message);
+    }
+  };
+}
+
+function logTrackSettings(html5QrCode, label) {
+  try {
+    const settings = html5QrCode.getRunningTrackSettings();
+    logDebug(`[${label}] camera track settings:`, settings);
+  } catch (err) {
+    logDebug(`[${label}] could not read track settings:`, err.message || err);
+  }
+}
+
 export default function ScannerScreen({ onScanSuccess, onCancel, selectedAccount, loginError }) {
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -30,6 +56,8 @@ export default function ScannerScreen({ onScanSuccess, onCancel, selectedAccount
           config = { facingMode: { exact: "environment" } };
         }
         
+        const scanErrorLogger = makeThrottledScanErrorLogger('main');
+
         const launch = async (cameraConfig) => {
           await html5QrCode.start(
             cameraConfig,
@@ -50,7 +78,7 @@ export default function ScannerScreen({ onScanSuccess, onCancel, selectedAccount
                   });
               }
             },
-            () => {}
+            scanErrorLogger
           );
         };
 
@@ -65,6 +93,7 @@ export default function ScannerScreen({ onScanSuccess, onCancel, selectedAccount
         setLoading(false);
         setError(null);
         logDebug('Camera started, scanning for QR...');
+        logTrackSettings(html5QrCode, 'main');
       } catch (err) {
         logDebug('Error starting scanner:', err.message || err);
         isScanningRef.current = false;
@@ -102,6 +131,8 @@ export default function ScannerScreen({ onScanSuccess, onCancel, selectedAccount
         config = { facingMode: { exact: "environment" } };
       }
 
+      const scanErrorLogger = makeThrottledScanErrorLogger('retry');
+
       const launch = (cameraConfig) => {
         return html5QrCode.start(
           cameraConfig,
@@ -122,7 +153,7 @@ export default function ScannerScreen({ onScanSuccess, onCancel, selectedAccount
                 });
             }
           },
-          () => {}
+          scanErrorLogger
         );
       };
 
@@ -130,16 +161,18 @@ export default function ScannerScreen({ onScanSuccess, onCancel, selectedAccount
       .then(() => {
         isScanningRef.current = true;
         setLoading(false);
+        logTrackSettings(html5QrCode, 'retry');
       })
       .catch((err) => {
-        console.warn('Failed with exact constraint on retry, trying fallback:', err);
+        logDebug('Failed with exact constraint on retry, trying fallback:', err.message || err);
         launch({ facingMode: "environment" })
         .then(() => {
           isScanningRef.current = true;
           setLoading(false);
+          logTrackSettings(html5QrCode, 'retry-fallback');
         })
         .catch((fallbackErr) => {
-          console.error('Error starting scanner on retry:', fallbackErr);
+          logDebug('Error starting scanner on retry:', fallbackErr.message || fallbackErr);
           isScanningRef.current = false;
           setLoading(false);
           setError('Camera access failed. Please check permissions.');
