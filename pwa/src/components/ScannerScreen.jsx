@@ -72,7 +72,10 @@ export default function ScannerScreen({ onScanSuccess, onCancel, selectedAccount
             { facingMode: "environment" },
             {
               fps: 10,
-              qrbox: { width: 250, height: 250 },
+              // No qrbox: scan the FULL camera frame. A fixed 250x250 qrbox only
+              // decodes a tiny central crop of the 1080x1920 feed — a QR on a
+              // screen easily overflows or falls outside that region, so it was
+              // never detected despite a perfect, focused camera image.
               videoConstraints,
             },
             (decodedText) => {
@@ -143,7 +146,7 @@ export default function ScannerScreen({ onScanSuccess, onCancel, selectedAccount
           { facingMode: "environment" },
           {
             fps: 10,
-            qrbox: { width: 250, height: 250 },
+            // No qrbox — scan the full frame (see note in the main launch above).
             videoConstraints,
           },
           (decodedText) => {

@@ -80,8 +80,13 @@ function generateQR(text) {
   qr.make();
 
   const moduleCount = qr.getModuleCount();
+  // QR spec requires a blank quiet zone (>=4 modules) around the code for
+  // reliable finder-pattern detection — without it, decoders can fail to
+  // lock on at all even though the code "looks" fine to a human.
+  const quietZoneModules = 4;
+  const totalModules = moduleCount + quietZoneModules * 2;
   const size = 200;
-  const cellSize = size / moduleCount;
+  const cellSize = size / totalModules;
   const ctx = qrCanvas.getContext('2d');
 
   qrCanvas.width = size;
@@ -94,11 +99,11 @@ function generateQR(text) {
   for (let row = 0; row < moduleCount; row++) {
     for (let col = 0; col < moduleCount; col++) {
       if (qr.isDark(row, col)) {
-        const x = col * cellSize;
-        const y = row * cellSize;
-        ctx.beginPath();
-        ctx.roundRect(x + 0.5, y + 0.5, cellSize - 1, cellSize - 1, 1);
-        ctx.fill();
+        const x = (col + quietZoneModules) * cellSize;
+        const y = (row + quietZoneModules) * cellSize;
+        // Solid squares, no rounding/gaps — decoders rely on precise module
+        // geometry (esp. the 1:1:3:1:1 finder-pattern ratio) to detect the code.
+        ctx.fillRect(x, y, cellSize, cellSize);
       }
     }
   }
