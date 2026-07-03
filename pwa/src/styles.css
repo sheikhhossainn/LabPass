@@ -249,12 +249,18 @@ p {
 
 .identity-item {
   display: flex;
-  align-items: center;
-  gap: 14px;
+  flex-direction: column;
+  gap: 12px;
   padding: 16px;
   background: var(--bg);
   border: 1px solid var(--line);
   border-radius: 14px;
+}
+
+.identity-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
 }
 
 .avatar {
@@ -387,23 +393,22 @@ p {
   font-size: 0.95rem;
 }
 
-.identity-actions {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin-left: auto;
-}
-
 .scan-account-btn {
+  width: 100%;
   border: 1px solid rgba(16, 185, 129, 0.18);
   background: rgba(16, 185, 129, 0.08);
   color: var(--accent-a);
-  border-radius: 999px;
+  border-radius: 10px;
   padding: 10px 14px;
   font-weight: 700;
-  font-size: 0.82rem;
+  font-size: 0.85rem;
   cursor: pointer;
   transition: transform 0.2s, background 0.2s, border-color 0.2s;
+}
+
+.scan-account-btn:hover {
+  background: rgba(16, 185, 129, 0.14);
+  border-color: rgba(16, 185, 129, 0.3);
 }
 
 .scan-account-btn:active {
@@ -422,6 +427,19 @@ p {
   color: var(--accent-a);
   font-size: 0.82rem;
   font-weight: 700;
+}
+
+.scanner-error-banner {
+  margin: 0 0 16px;
+  padding: 10px 14px;
+  border-radius: 12px;
+  background: var(--danger-bg);
+  border: 1px solid rgba(248, 113, 113, 0.25);
+  color: var(--danger);
+  font-size: 0.85rem;
+  font-weight: 600;
+  line-height: 1.4;
+  text-align: center;
 }
 
 /* ── Sessions ── */

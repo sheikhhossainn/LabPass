@@ -1,11 +1,19 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Html5Qrcode } from 'html5-qrcode';
 
-export default function ScannerScreen({ onScanSuccess, onCancel, selectedAccount }) {
+export default function ScannerScreen({ onScanSuccess, onCancel, selectedAccount, loginError }) {
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [banner, setBanner] = useState(loginError || null);
   const qrCodeRef = useRef(null);
   const isScanningRef = useRef(false);
+
+  useEffect(() => {
+    if (!loginError) return;
+    setBanner(loginError);
+    const timer = setTimeout(() => setBanner(null), 5000);
+    return () => clearTimeout(timer);
+  }, [loginError]);
 
   useEffect(() => {
     // Instantiate Html5Qrcode directly to bypass default controls UI
@@ -147,6 +155,10 @@ export default function ScannerScreen({ onScanSuccess, onCancel, selectedAccount
         <div className="scanner-account-chip">
           Using {selectedAccount.displayName}
         </div>
+      )}
+
+      {banner && (
+        <div className="scanner-error-banner">{banner}</div>
       )}
 
       <div className="qr-reader-container" style={{ position: 'relative', minHeight: '260px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: '#000' }}>

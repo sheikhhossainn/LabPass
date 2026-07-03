@@ -20,7 +20,7 @@ const {
 } = require('./src/sessionStore');
 
 const PORT = Number(process.env.PORT || 3001);
-const SESSION_TOKEN_TTL_MS = 60 * 1000;
+const SESSION_TOKEN_TTL_MS = 5 * 60 * 1000;
 const ACTIVE_SESSION_TTL_MS = 3 * 60 * 60 * 1000;
 const HTTPS_KEY_PATH = process.env.HTTPS_KEY_PATH;
 const HTTPS_CERT_PATH = process.env.HTTPS_CERT_PATH;

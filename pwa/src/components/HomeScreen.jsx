@@ -56,32 +56,32 @@ export default function HomeScreen({ accounts, onAddAccount, onRemoveAccount, on
         ) : (
           accounts.map((account) => (
             <article key={account.email} className="identity-item">
-              <div className="avatar">
-                {account.pictureUrl ? (
-                  <img src={account.pictureUrl} alt={account.displayName} referrerPolicy="no-referrer" />
-                ) : (
-                  <span>{account.displayName.charAt(0).toUpperCase()}</span>
-                )}
-              </div>
-              <div className="identity-body">
-                <h3>{account.displayName}</h3>
-                <p>{account.email}</p>
-              </div>
-              <div className="identity-actions">
+              <div className="identity-row">
+                <div className="avatar">
+                  {account.pictureUrl ? (
+                    <img src={account.pictureUrl} alt={account.displayName} referrerPolicy="no-referrer" />
+                  ) : (
+                    <span>{account.displayName.charAt(0).toUpperCase()}</span>
+                  )}
+                </div>
+                <div className="identity-body">
+                  <h3>{account.displayName}</h3>
+                  <p>{account.email}</p>
+                </div>
                 <button
-                  className="scan-account-btn"
-                  onClick={() => onStartScan(account)}
-                >
-                  Scan with this account
-                </button>
-                <button 
-                  className="icon-btn danger" 
+                  className="icon-btn danger"
                   onClick={() => onRemoveAccount(account.email)}
                   title="Remove account"
                 >
                   ✕
                 </button>
               </div>
+              <button
+                className="scan-account-btn"
+                onClick={() => onStartScan(account)}
+              >
+                Scan with this account
+              </button>
             </article>
           ))
         )}

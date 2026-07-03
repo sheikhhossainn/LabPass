@@ -39,6 +39,8 @@ export default function App() {
   const [accounts, setAccounts] = useState([]);
   const [sessions, setSessions] = useState([]);
   const [scannedToken, setScannedToken] = useState(null);
+  const [scanError, setScanError] = useState(null);
+  const [scanAttempt, setScanAttempt] = useState(0);
   const [selectedAccountEmail, setSelectedAccountEmail] = useState(() => {
     try {
       return sessionStorage.getItem('labpass.selectedAccountEmail') || '';
@@ -336,17 +338,29 @@ export default function App() {
     };
 
     const emit = () => {
-      activeSocket.emit('login-approved', {
+      activeSocket.timeout(8000).emit('login-approved', {
         sessionToken: token,
         email: account.email,
         displayName: account.displayName,
         pictureUrl: account.pictureUrl,
         encryptedPayload: encryptPayload(payload),
+      }, (err, ack) => {
+        if (err || !ack || !ack.ok) {
+          setScanError(
+            err
+              ? 'The lab computer did not respond in time. Please refresh the QR code and try again.'
+              : 'This QR code has expired or is invalid. Please refresh the QR code on the lab computer and scan again.'
+          );
+          setScanAttempt((n) => n + 1);
+          return;
+        }
+
+        setSelectedAccountEmail('');
+        setScannedToken(null);
+        setScanError(null);
+        setRoute('sessions');
+        setRouteHash('sessions');
       });
-      setSelectedAccountEmail('');
-      setScannedToken(null);
-      setRoute('sessions');
-      setRouteHash('sessions');
     };
 
     if (activeSocket.connected) {
@@ -431,6 +445,7 @@ export default function App() {
             onRemoveAccount={handleRemoveAccount} 
             onStartScan={(account) => {
               setScannedToken(null);
+              setScanError(null);
               setSelectedAccountEmail(account.email);
               navigateTo('scan');
             }}
@@ -446,14 +461,17 @@ export default function App() {
         )}
 
         {route === 'scan' && (
-          <ScannerScreen 
-            onScanSuccess={handleScanSuccess} 
+          <ScannerScreen
+            key={scanAttempt}
+            onScanSuccess={handleScanSuccess}
             onCancel={() => {
               setScannedToken(null);
+              setScanError(null);
               setSelectedAccountEmail('');
               navigateTo('setup');
             }}
             selectedAccount={selectedAccount}
+            loginError={scanError}
           />
         )}
 
