@@ -81,29 +81,40 @@ function generateQR(text) {
 
   const moduleCount = qr.getModuleCount();
   // QR spec requires a blank quiet zone (>=4 modules) around the code for
-  // reliable finder-pattern detection — without it, decoders can fail to
-  // lock on at all even though the code "looks" fine to a human.
+  // reliable finder-pattern detection.
   const quietZoneModules = 4;
   const totalModules = moduleCount + quietZoneModules * 2;
-  const size = 200;
-  const cellSize = size / totalModules;
+
+  // Draw with an INTEGER pixel size per module. The previous code used
+  // 200 / totalModules (~3.77px, fractional) and drew at fractional coords,
+  // so the browser anti-aliased every module edge into a blur that no QR
+  // decoder — not even Google Lens — could resolve. Rendering at a large
+  // integer cellSize keeps every module perfectly crisp; CSS then scales the
+  // canvas down to its 200px display box, and downscaling a sharp source is
+  // clean (unlike upscaling/anti-aliasing a tiny one).
+  const cellSize = 10;
+  const canvasSize = totalModules * cellSize;
+
   const ctx = qrCanvas.getContext('2d');
+  qrCanvas.width = canvasSize;
+  qrCanvas.height = canvasSize;
+  ctx.imageSmoothingEnabled = false;
 
-  qrCanvas.width = size;
-  qrCanvas.height = size;
-
+  // White background (covers the quiet zone too).
   ctx.fillStyle = '#ffffff';
-  ctx.fillRect(0, 0, size, size);
+  ctx.fillRect(0, 0, canvasSize, canvasSize);
 
-  ctx.fillStyle = '#0b1120';
+  // Pure-black solid modules at integer positions for maximum contrast/sharpness.
+  ctx.fillStyle = '#000000';
   for (let row = 0; row < moduleCount; row++) {
     for (let col = 0; col < moduleCount; col++) {
       if (qr.isDark(row, col)) {
-        const x = (col + quietZoneModules) * cellSize;
-        const y = (row + quietZoneModules) * cellSize;
-        // Solid squares, no rounding/gaps — decoders rely on precise module
-        // geometry (esp. the 1:1:3:1:1 finder-pattern ratio) to detect the code.
-        ctx.fillRect(x, y, cellSize, cellSize);
+        ctx.fillRect(
+          (col + quietZoneModules) * cellSize,
+          (row + quietZoneModules) * cellSize,
+          cellSize,
+          cellSize
+        );
       }
     }
   }
@@ -160,11 +171,13 @@ async function initSession() {
       serverUrl: config.serverUrl,
     });
 
-    // Generate and show QR
-    generateQR(JSON.stringify({
-      token: data.sessionToken,
-      server: config.serverUrl,
-    }));
+    // Generate and show QR.
+    // Encode ONLY the raw token, not JSON with the server URL. The long URL
+    // roughly doubled the QR's module count (v7 ~45x45 vs v3 ~29x29), and at
+    // the locked 200px display that made each module physically tiny (~3.7px)
+    // and hard to scan. The PWA's scan handler already falls back to its
+    // default relay server when the QR isn't JSON, so a bare token is enough.
+    generateQR(data.sessionToken);
 
     showState('qr');
     setStatus('connected', 'Connected to server');

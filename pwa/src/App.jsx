@@ -12,6 +12,12 @@ import { getAccounts, addAccount, removeAccount } from './lib/db';
 import { encryptPayload, decodeIdToken } from './lib/crypto';
 import { logDebug } from './lib/debugLog';
 
+// Bump this string on every deploy where we need to confirm the phone actually
+// loaded the new bundle (PWAs cache aggressively via the service worker). It's
+// logged to the Debug Panel on startup — if the panel doesn't show the expected
+// value, the phone is running a stale cached build, not the latest deploy.
+const BUILD_ID = 'build-2026-07-04-fullframe-scan';
+
 const _isLocal = typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
 const backendUrl = import.meta.env.VITE_BACKEND_URL
   ? (_isLocal ? import.meta.env.VITE_BACKEND_URL : (import.meta.env.VITE_BACKEND_URL === 'http://localhost:3001' ? 'https://labpass.onrender.com' : import.meta.env.VITE_BACKEND_URL))
@@ -208,6 +214,7 @@ export default function App() {
 
   // Load accounts on mount
   useEffect(() => {
+    logDebug('PWA build:', BUILD_ID);
     getAccounts().then(setAccounts).catch(console.error);
   }, []);
 
